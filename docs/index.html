@@ -15,7 +15,7 @@
         const firstVideo = data.videos[0];
 
         // Redirect to Step2.html of that video (match your exact filename)
-        window.location.href = `videos/${firstVideo}/Step2.html`;
+        window.location.href = `videos/${firstVideo}/Step1.html`;
       } catch (error) {
         console.error("Error loading videos.json", error);
         document.body.innerHTML = "<h2>Could not load videos list.</h2>";
