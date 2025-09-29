@@ -7,35 +7,11 @@
   <!-- ExoClick Verification Meta Tag -->
   <meta name="6a97888e-site-verification" content="f288a544faf4d781b5fdd5d1aaa62853">
   
-  <title>Nepali Kanda Redirect</title>
-  
-  <script>
-    async function redirectToFirstVideo() {
-      try {
-        // Load the list of video folders from videos.json
-        const response = await fetch('videos.json');
-        const data = await response.json();
-
-        // Pick the first video folder (e.g., "video1")
-        const firstVideo = data.videos[0];
-
-        // Redirect to Step1.html of that video
-        window.location.href = `videos/${firstVideo}/Step1.html`;
-      } catch (error) {
-        console.error("Error loading videos.json", error);
-        document.body.innerHTML = "<h2>Could not load videos list.</h2>";
-      }
-    }
-
-    // Delay redirect so ExoClick can read the meta tag
-    window.onload = () => {
-      setTimeout(redirectToFirstVideo, 5000); // 5 seconds
-    };
-  </script>
+  <title>ExoClick Verification</title>
 </head>
 <body>
-  <h2 style="text-align:center; margin-top:50px;">
-    Please wait... Redirecting to Nepali Kanda videos.
-  </h2>
+  <h1 style="text-align:center; margin-top:50px;">
+    Verifying Nepali Kanda Domain for ExoClick...
+  </h1>
 </body>
 </html>
