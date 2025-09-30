@@ -1,33 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- ExoClick verification meta tag -->
   <meta name="6a97888e-site-verification" content="f288a544faf4d781b5fdd5d1aaa62853">
-  <title>Nepali Kanda Redirect</title>
-  <script>
-    async function redirectToFirstVideo() {
-      try {
-        // Load the list of video folders from videos.json
-        const response = await fetch('videos.json');
-        const data = await response.json();
 
-        // Pick the first video folder (e.g., "video1")
-        const firstVideo = data.videos[0];
-
-        // Redirect to Step2.html of that video (match your exact filename)
-        window.location.href = `videos/${firstVideo}/Step1.html`;
-      } catch (error) {
-        console.error("Error loading videos.json", error);
-        document.body.innerHTML = "<h2>Could not load videos list.</h2>";
-      }
-    }
-
-    window.onload = redirectToFirstVideo;
-  </script>
+  <title>Nepali Kanda Verification</title>
 </head>
 <body>
-  <!-- Nothing visible, just redirects -->
+  <h1>Domain Verification</h1>
+  <p>This page is only temporary for ExoClick domain verification.</p>
 </body>
 </html>
