@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nepali Kanda - Step 2</title>
+  <!-- Fluid Player CSS (necessary for styling the player) -->
+  <link href="https://releases.fluidplayer.com/v3/current/fluidplayer.min.css" rel="stylesheet">
+
+  <!-- Fluid Player JS (necessary for functionality and VAST ads) -->
+  <script src="https://releases.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -169,11 +174,25 @@
   <p>Check out some sample videos below (you can replace with your own):</p>
   
   <div class="video-container">
-    <video controls>
-      <source src="../../videoxx/video1.mp4" type="video/mp4">
-      Your browser does not support the video tag.
-    </video>
-  </div>
+  <video id="video1" controls>
+    <source src="../../videoxx/video1.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+<script>
+  fluidPlayer('video1', {
+    vastOptions: {
+      adList: [
+        {
+          roll: 'preRoll',
+          vastTagUrl: 'https://s.magsrv.com/v1/vast.php?idzone=5738358'
+        }
+      ]
+    }
+  });
+</script>
+
 </section>
 
 <div class="ad-box">[ Middle Ad Placeholder ]</div>
