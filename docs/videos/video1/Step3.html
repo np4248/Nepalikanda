@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nepali Kanda - Step 3</title>
+  <!-- Fluid Player CSS (necessary for styling the player) -->
+  <link href="https://releases.fluidplayer.com/v3/current/fluidplayer.min.css" rel="stylesheet">
+
+  <!-- Fluid Player JS (necessary for functionality and VAST ads) -->
+  <script src="https://releases.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -148,12 +153,76 @@
 </head>
 <body>
 
+  <script type="application/javascript">
+    pn_idzone = 5738368;
+    pn_sleep_seconds = 0;
+    pn_is_self_hosted = 0;
+    pn_soft_ask = 1;
+    pn_filename = "/worker.js";
+    pn_soft_ask_horizontal_position = "left";
+    pn_soft_ask_vertical_position = "top";
+    pn_soft_ask_title_enabled = 1;
+    pn_soft_ask_title = "Click ALLOW to continue";
+    pn_soft_ask_description = "Would you like to receive great special offers &amp; promotions?";
+    pn_soft_ask_yes = "ALLOW";
+    pn_soft_ask_no = "NO, THANKS"; 
+</script>
+
+<script type="application/javascript" src="https://js.wpnsrv.com/pn.php"></script>
+
+
+  <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e31" data-zoneid="5738942" data-keywords="keywords" data-sub="123450000"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+<script type="application/javascript" src="https://js.wpnsrv.com/pn.php"></script>
+
+
+
+  <script async type="application/javascript" src="https://a.pemsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e33" data-zoneid="5738950"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+
+
+  <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e14" data-zoneid="5738952"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+  <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e17" data-zoneid="5738956"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+  <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e42" data-zoneid="5739006"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+  
+
+  <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e6" data-zoneid="5739022"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+<header>
+  <h1>Nepali Kanda - Step 2</h1>
+  <p>Access your videos safely & securely</p>
+</header>
+
+<div class="ad-box">
+    <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e37" data-zoneid="5739016"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
 <header>
   <h1>Nepali Kanda - Step 3</h1>
   <p>Adult Health, Safety & Privacy Guidelines</p>
 </header>
 
-<div class="ad-box">[ Top Ad Placeholder ]</div>
+<div class="ad-box">
+    <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e37" data-zoneid="5739016"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+</div>
 
 <section>
   <h2>Understanding Adult Health</h2>
@@ -167,7 +236,12 @@
   <p>Your privacy is extremely important. Always use secure and trusted networks when accessing adult content. Nepali Kanda does not host videos directly, which reduces risks to your device. Using private browsing modes and clearing cache periodically can also enhance your privacy. Never share personal information or payment details on suspicious websites.</p>
 </section>
 
-<div class="ad-box">[ Middle Ad Placeholder ]</div>
+<div class="ad-box">
+    <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e37" data-zoneid="5739016"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+</div>
 
 <section>
   <h2>Emotional & Mental Wellbeing</h2>
@@ -180,14 +254,36 @@
   <p>Sample videos below can be replaced with your own local files:</p>
   
   <div class="video-container">
-    <video controls>
+    <!-- Your video (no autoplay, plays only on user click) -->
+    <video id="video1" controls>
       <source src="../../videoxx/video1.mp4" type="video/mp4">
       Your browser does not support the video tag.
     </video>
   </div>
+
+  <script>
+    fluidPlayer('video1', {
+      layoutControls: {
+        autoPlay: false // important: don’t autoplay, ExoClick In-Stream requires click
+      },
+      vastOptions: {
+        adList: [
+          {
+            roll: 'preRoll',
+            vastTagUrl: 'https://s.magsrv.com/v1/vast.php?idzone=5738358'
+          }
+        ]
+      }
+    });
+  </script>
 </section>
 
-<div class="ad-box">[ Bottom Ad Placeholder ]</div>
+<div class="ad-box">
+    <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e37" data-zoneid="5739016"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+</div>
 
 <section>
   <h2>Contact & Information</h2>
@@ -203,6 +299,11 @@
 
 <footer>
   <p>&copy; 2025 Nepali Kanda. All rights reserved.</p>
+  
+  <p><strong>18 U.S.C. 2257 Compliance Statement:</strong> All models appearing on this website are 18 years of age or older at the time of production. Nepali Kanda does not host or produce any videos on its servers. All videos are linked from third-party services and are publicly available.</p>
+  
+  <p><strong>DMCA Contact:</strong> If you are a copyright holder and wish to make a removal request, please contact us at 
+    <a href="mailto:p1ussyl1over@gmail.com">nepalikanda4248@gmail.com</a>.
 </footer>
 
 <script>
