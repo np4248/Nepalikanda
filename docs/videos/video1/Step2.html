@@ -4,11 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nepali Kanda - Step 2</title>
-  <!-- Fluid Player CSS (necessary for styling the player) -->
+  
   <link href="https://releases.fluidplayer.com/v3/current/fluidplayer.min.css" rel="stylesheet">
+<script src="https://releases.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
 
-  <!-- Fluid Player JS (necessary for functionality and VAST ads) -->
-  <script src="https://releases.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -234,20 +233,27 @@
   </div>
 
   <script>
+  document.addEventListener('DOMContentLoaded', function () {
     fluidPlayer('video1', {
       layoutControls: {
-        autoPlay: false // important: don’t autoplay, ExoClick In-Stream requires click
+        autoPlay: false
       },
       vastOptions: {
         adList: [
           {
             roll: 'preRoll',
-            vastTagUrl: 'https://s.magsrv.com/v1/vast.php?idzone=5738358'
+            vastTagUrl: 'https://s.magsrv.com/v1/vast.php?idzone=5740014'
+          },
+          {
+            roll: 'onPauseRoll',
+            vastTagUrl: 'https://s.magsrv.com/splash.php?idzone=5739150'
           }
         ]
       }
     });
-  </script>
+  });
+</script>
+
 
 </section>
 
