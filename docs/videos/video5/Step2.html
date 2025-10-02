@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nepali Kanda - Step 2</title>
+  
+  <link href="https://releases.fluidplayer.com/v3/current/fluidplayer.min.css" rel="stylesheet">
+<script src="https://releases.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #000;
+      color: #eee;
+      line-height: 1.6;
+    }
+
+    /* Header with background image + overlay */
+    header {
+      position: relative;
+      width: 100%;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: red;
+      background-image: url('../../picture/picture4.png'); /* replace with your local image */
+      background-size: cover;
+      background-position: center;
+    }
+    header::before {
+      content: "";
+      position: absolute;
+      top:0; left:0;
+      width:100%; height:100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1;
+    }
+    header h1, header p {
+      position: relative;
+      z-index: 2;
+      margin: 5px 20px;
+    }
+    header h1 {
+      font-size: 2rem;
+    }
+
+    /* Sections */
+    section {
+      width: 95%;
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: rgba(28,28,28,0.8);
+      border-radius: 10px;
+    }
+    section img {
+      width: 250px;
+      height: 250px;
+      object-fit: cover;
+      display: block;
+      margin: 15px auto;
+      border-radius: 10px;
+    }
+
+    /* Video containers */
+    .video-container {
+      position: relative;
+      width: 100%;
+      max-width: 900px;
+      margin: 15px auto;
+      padding-top: 56.25%; /* 16:9 ratio */
+    }
+    .video-container video {
+      position: absolute;
+      top:0; left:0;
+      width:100%; height:100%;
+      border-radius: 8px;
+    }
+
+    /* Ad placeholders */
+    .ad-box {
+      background: #2a2a2a;
+      border: 2px dashed #999;
+      text-align: center;
+      padding: 40px;
+      margin: 20px auto;
+      font-style: italic;
+      border-radius: 8px;
+      color: #ccc;
+      max-width: 1200px;
+    }
+
+    /* Continue button */
+    .btn {
+      display: block;
+      width: 280px;
+      margin: 35px auto;
+      padding: 15px;
+      text-align: center;
+      background: linear-gradient(45deg, #ff0000, #000);
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 30px;
+      transition: 0.3s;
+    }
+    .btn:hover {
+      background: linear-gradient(45deg, #000, #ff0000);
+      transform: scale(1.05);
+    }
+
+    /* Footer with background image + overlay */
+    footer {
+      position: relative;
+      width: 100%;
+      padding: 30px 20px;
+      text-align: center;
+      color: red;
+      background-image: url('../../picture/picture4.png'); /* replace with your local image */
+      background-size: cover;
+      background-position: center;
+    }
+    footer::before {
+      content: "";
+      position: absolute;
+      top:0; left:0;
+      width:100%; height:100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1;
+    }
+    footer p {
+      position: relative;
+      z-index: 2;
+      margin: 5px 0;
+    }
+
+    /* Wait timer text */
+    #timer {
+      text-align: center;
+      font-size: 1.2rem;
+      margin-top: 10px;
+      color: #ff4c4c;
+    }
+
+    @media (max-width:600px){
+      header h1 { font-size:1.5rem; }
+    }
+
+  </style>
+</head>
+<body>
+
+  <script type="application/javascript">
+    pn_idzone = 5738368;
+    pn_sleep_seconds = 0;
+    pn_is_self_hosted = 0;
+    pn_soft_ask = 1;
+    pn_filename = "/worker.js";
+    pn_soft_ask_horizontal_position = "left";
+    pn_soft_ask_vertical_position = "top";
+    pn_soft_ask_title_enabled = 1;
+    pn_soft_ask_title = "Click ALLOW to continue";
+    pn_soft_ask_description = "Would you like to receive great special offers &amp; promotions?";
+    pn_soft_ask_yes = "ALLOW";
+    pn_soft_ask_no = "NO, THANKS"; 
+</script>
+
+<script type="application/javascript" src="https://js.wpnsrv.com/pn.php"></script>
+
+
+  <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e31" data-zoneid="5738942" data-keywords="keywords" data-sub="123450000"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+<script type="application/javascript" src="https://js.wpnsrv.com/pn.php"></script>
+
+
+
+  <script async type="application/javascript" src="https://a.pemsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e33" data-zoneid="5738950"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+
+
+  <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e14" data-zoneid="5738952"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+  <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e17" data-zoneid="5738956"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+  <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e42" data-zoneid="5739006"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+  
+
+  
+<header>
+  <h1>Nepali Kanda - Step 2</h1>
+  <p>Access your videos safely & securely</p>
+</header>
+
+<div class="ad-box">
+    <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e37" data-zoneid="5739016"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+</div>
+
+<section>
+  <h2>How Nepali Kanda Works</h2>
+  <img src="../../picture/picture6.png" alt="How It Works">
+  <p>Nepali Kanda delivers adult content through a safe 4-step process. Each step helps us provide a secure browsing experience while supporting the platform through advertisements. Your privacy and access are our top priorities.</p>
+</section>
+
+<section>
+  <h2>Trial Video Section</h2>
+  <p>Check out some sample videos below (you can replace with your own):</p>
+  
+  <div class="video-container">
+    <!-- Your video (no autoplay, plays only on user click) -->
+    <video id="video1" controls>
+      <source src="../../videoxx/video1.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    fluidPlayer('video1', {
+      layoutControls: {
+        autoPlay: false
+      },
+      vastOptions: {
+        adList: [
+          {
+            roll: 'preRoll',
+            vastTagUrl: 'https://s.magsrv.com/v1/vast.php?idzone=5740014'
+          },
+          {
+            roll: 'onPauseRoll',
+            vastTagUrl: 'https://s.magsrv.com/splash.php?idzone=5739150'
+          }
+        ]
+      }
+    });
+  });
+</script>
+
+
+</section>
+
+<div class="ad-box">
+    <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e37" data-zoneid="5739016"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+</div>
+
+<section>
+  <h2>Why Choose Nepali Kanda</h2>
+  <img src="../../picture/picture10.png" alt="Why Choose">
+  <ul>
+    <li>Regularly updated adult videos.</li>
+    <li>Safe external hosting for all videos.</li>
+    <li>Designed for Nepali viewers with privacy in mind.</li>
+    <li>Fully transparent — no hidden tricks or charges.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Tips for Adult Safety</h2>
+  
+  <p>Always use secure networks when accessing adult content. Ensure your device is updated and protected. Nepali Kanda ensures videos are hosted externally for maximum safety.</p>
+</section>
+
+<div class="ad-box">
+    <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e37" data-zoneid="5739016"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+</div>
+
+<section>
+  <h2>Contact & Information</h2>
+  
+  <p>Stay connected for updates, news, and announcements. Reach out to us via:</p>
+  <p><strong>Email:</strong> p1ussyl1over@gmail.com</p>
+  <p><a href="#" target="_blank">Visit our Facebook Page</a> (coming soon)</p>
+</section>
+
+<div id="timer">You can continue in <span id="countdown">10</span> seconds</div>
+
+<a href="Step3.html" id="continueBtn" class="btn" style="display:none;">Continue to Step 3</a>
+
+<footer>
+  <p>&copy; 2025 Nepali Kanda. All rights reserved.</p>
+  <p>&copy; 2025 Nepali Kanda. All rights reserved.</p>
+  
+  <p><strong>18 U.S.C. 2257 Compliance Statement:</strong> All models appearing on this website are 18 years of age or older at the time of production. Nepali Kanda does not host or produce any videos on its servers. All videos are linked from third-party services and are publicly available.</p>
+  
+  <p><strong>DMCA Contact:</strong> If you are a copyright holder and wish to make a removal request, please contact us at 
+    <a href="mailto:p1ussyl1over@gmail.com">nepalikanda4248@gmail.com</a>
+</footer>
+
+<script>
+  // Wait timer
+  let timeLeft = 10;
+  const countdown = document.getElementById('countdown');
+  const continueBtn = document.getElementById('continueBtn');
+
+  const timer = setInterval(() => {
+    timeLeft--;
+    countdown.textContent = timeLeft;
+    if(timeLeft <= 0){
+      clearInterval(timer);
+      document.getElementById('timer').style.display = 'none';
+      continueBtn.style.display = 'block';
+    }
+  }, 1000);
+</script>
+
+</body>
+</html>

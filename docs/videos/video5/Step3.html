@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nepali Kanda - Step 3</title>
+  <!-- Fluid Player CSS (necessary for styling the player) -->
+  <link href="https://releases.fluidplayer.com/v3/current/fluidplayer.min.css" rel="stylesheet">
+
+  <!-- Fluid Player JS (necessary for functionality and VAST ads) -->
+  <script src="https://releases.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #000;
+      color: #eee;
+      line-height: 1.6;
+    }
+
+    /* Header */
+    header {
+      position: relative;
+      width: 100%;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: red;
+      background-image: url('../../picture/picture4.png'); /* replace with your local image */
+      background-size: cover;
+      background-position: center;
+    }
+    header::before {
+      content: "";
+      position: absolute;
+      top:0; left:0;
+      width:100%; height:100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1;
+    }
+    header h1, header p {
+      position: relative;
+      z-index: 2;
+      margin: 5px 20px;
+    }
+    header h1 { font-size: 2rem; }
+
+    /* Sections */
+    section {
+      width: 95%;
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: rgba(28,28,28,0.8);
+      border-radius: 10px;
+    }
+    section img {
+      width: 250px;
+      height: 250px;
+      object-fit: cover;
+      display: block;
+      margin: 15px auto;
+      border-radius: 10px;
+    }
+
+    /* Video containers */
+    .video-container {
+      position: relative;
+      width: 100%;
+      max-width: 900px;
+      margin: 15px auto;
+      padding-top: 56.25%; /* 16:9 ratio */
+    }
+    .video-container video {
+      position: absolute;
+      top:0; left:0;
+      width:100%; height:100%;
+      border-radius: 8px;
+    }
+
+    /* Ad placeholders */
+    .ad-box {
+      background: #2a2a2a;
+      border: 2px dashed #999;
+      text-align: center;
+      padding: 40px;
+      margin: 20px auto;
+      font-style: italic;
+      border-radius: 8px;
+      color: #ccc;
+      max-width: 1200px;
+    }
+
+    /* Continue button */
+    .btn {
+      display: block;
+      width: 280px;
+      margin: 35px auto;
+      padding: 15px;
+      text-align: center;
+      background: linear-gradient(45deg, #ff0000, #000);
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 30px;
+      transition: 0.3s;
+    }
+    .btn:hover {
+      background: linear-gradient(45deg, #000, #ff0000);
+      transform: scale(1.05);
+    }
+
+    /* Footer */
+    footer {
+      position: relative;
+      width: 100%;
+      padding: 30px 20px;
+      text-align: center;
+      color: red;
+      background-image: url('../../picture/picture4.png'); /* replace with your local image */
+      background-size: cover;
+      background-position: center;
+    }
+    footer::before {
+      content: "";
+      position: absolute;
+      top:0; left:0;
+      width:100%; height:100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1;
+    }
+    footer p {
+      position: relative;
+      z-index: 2;
+      margin: 5px 0;
+    }
+
+    /* Wait timer */
+    #timer {
+      text-align: center;
+      font-size: 1.2rem;
+      margin-top: 10px;
+      color: #ff4c4c;
+    }
+
+    @media (max-width:600px){
+      header h1 { font-size:1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  
+<script type="application/javascript" src="https://js.wpnsrv.com/pn.php"></script>
+
+
+  <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e31" data-zoneid="5738942" data-keywords="keywords" data-sub="123450000"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+<script type="application/javascript" src="https://js.wpnsrv.com/pn.php"></script>
+
+
+
+  <script async type="application/javascript" src="https://a.pemsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e33" data-zoneid="5738950"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+
+
+  <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e14" data-zoneid="5738952"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+  <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e17" data-zoneid="5738956"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+  <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e42" data-zoneid="5739006"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+  
+
+  
+<header>
+  <h1>Nepali Kanda - Step 2</h1>
+  <p>Access your videos safely & securely</p>
+</header>
+
+<div class="ad-box">
+    <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e37" data-zoneid="5739016"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+<header>
+  <h1>Nepali Kanda - Step 3</h1>
+  <p>Adult Health, Safety & Privacy Guidelines</p>
+</header>
+
+<div class="ad-box">
+    <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e37" data-zoneid="5739016"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+</div>
+
+<section>
+  <h2>Understanding Adult Health</h2>
+  <img src="../../picture/picture11.png" alt="Health Info">
+  <p>Consuming adult content is a normal part of human curiosity, but it is important to do so responsibly. Excessive consumption can affect mental health, attention span, and interpersonal relationships. Moderation is key. Take breaks, maintain balance with real-life social activities, and ensure that your viewing habits do not interfere with your daily responsibilities. It is essential to choose reputable platforms like Nepali Kanda to avoid malware, fake content, and inappropriate links.</p>
+</section>
+
+<section>
+  <h2>Privacy & Online Safety</h2>
+  <img src="../../picture/picture8.png" alt="Privacy Info">
+  <p>Your privacy is extremely important. Always use secure and trusted networks when accessing adult content. Nepali Kanda does not host videos directly, which reduces risks to your device. Using private browsing modes and clearing cache periodically can also enhance your privacy. Never share personal information or payment details on suspicious websites.</p>
+</section>
+
+<div class="ad-box">
+    <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e6" data-zoneid="5739022"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+</div>
+
+<section>
+  <h2>Emotional & Mental Wellbeing</h2>
+  <img src="../../picture/picture9.png" alt="Mental Health">
+  <p>Adult content can influence emotional and mental states. It is natural to feel curiosity, but prolonged or compulsive viewing may lead to unrealistic expectations or desensitization. Be mindful of your reactions and maintain a healthy perspective. If you notice any negative impact on your mood, relationships, or behavior, consider taking breaks or seeking guidance from trusted adults or counselors. Nepali Kanda encourages safe and responsible consumption, always prioritizing wellbeing.</p>
+</section>
+
+<section>
+  <h2>Trial Videos for Reference</h2>
+  <p>Sample videos below can be replaced with your own local files:</p>
+  
+  <div class="video-container">
+    <!-- Your video (no autoplay, plays only on user click) -->
+    <video id="video1" controls>
+      <source src="../../videoxx/video1.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    fluidPlayer('video1', {
+      layoutControls: {
+        autoPlay: false
+      },
+      vastOptions: {
+        adList: [
+          {
+            roll: 'preRoll',
+            vastTagUrl: 'https://s.magsrv.com/v1/vast.php?idzone=5740014'
+          },
+          {
+            roll: 'onPauseRoll',
+            vastTagUrl: 'https://s.magsrv.com/splash.php?idzone=5739150'
+          }
+        ]
+      }
+    });
+  });
+  </script>
+</section>
+
+<div class="ad-box">
+    <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e37" data-zoneid="5739016"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+</div>
+
+<section>
+  <h2>Contact & Information</h2>
+  
+  <p>Stay updated on platform news and new videos. Contact us safely via:</p>
+  <p><strong>Email:</strong> p1ussyl1over@gmail.com</p>
+  <p><a href="#" target="_blank">Visit our Facebook Page</a> (coming soon)</p>
+</section>
+
+<div id="timer">You can continue in <span id="countdown">10</span> seconds</div>
+
+<a href="Step4.html" id="continueBtn" class="btn" style="display:none;">Continue to Step 4</a>
+
+<footer>
+  <p>&copy; 2025 Nepali Kanda. All rights reserved.</p>
+  
+  <p><strong>18 U.S.C. 2257 Compliance Statement:</strong> All models appearing on this website are 18 years of age or older at the time of production. Nepali Kanda does not host or produce any videos on its servers. All videos are linked from third-party services and are publicly available.</p>
+  
+  <p><strong>DMCA Contact:</strong> If you are a copyright holder and wish to make a removal request, please contact us at 
+    <a href="mailto:p1ussyl1over@gmail.com">nepalikanda4248@gmail.com</a>.
+</footer>
+
+<script>
+  // Wait timer
+  let timeLeft = 10;
+  const countdown = document.getElementById('countdown');
+  const continueBtn = document.getElementById('continueBtn');
+
+  const timer = setInterval(() => {
+    timeLeft--;
+    countdown.textContent = timeLeft;
+    if(timeLeft <= 0){
+      clearInterval(timer);
+      document.getElementById('timer').style.display = 'none';
+      continueBtn.style.display = 'block';
+    }
+  }, 1000);
+</script>
+
+</body>
+</html>
