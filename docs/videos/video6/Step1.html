@@ -45,7 +45,7 @@
     section { width: 95%; max-width: 1200px; margin: 20px auto; padding: 20px; background-color: rgba(28,28,28,0.8); border-radius: 10px; }
     section img { width: 200px; height: 200px; object-fit: cover; display: block; margin: 15px auto; border-radius: 10px; }
     .ad-box { background: #2a2a2a; border: 2px dashed #999; text-align: center; padding: 40px; margin: 20px auto; font-style: italic; border-radius: 8px; color: #ccc; max-width: 1200px; }
-    .btn { display: block; width: 280px; margin: 35px auto; padding: 15px; text-align: center; background: linear-gradient(45deg, #ff0000, #000); color: #fff; text-decoration: none; font-weight: bold; border-radius: 30px; transition: 0.3s; }
+    .btn { display: block; width: 280px; margin: 35px auto; padding: 15px; text-align: center; background: linear-gradient(45deg, #ff0000, #000); color: #fff; text-decoration: none; font-weight: bold; border-radius: 30px; transition: 0.3s; cursor: pointer; }
     .btn:hover { background: linear-gradient(45deg, #000, #ff0000); transform: scale(1.05); }
     footer { position: relative; width: 100%; padding: 30px 20px; text-align: center; color: red; background-image: url('../../picture/picture4.png'); background-size: cover; background-position: center; }
     footer::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1; }
@@ -56,7 +56,6 @@
   </style>
 </head>
 <body>
-  
 
 <header>
   <h1>Nepali Kanda - Step 1</h1>
@@ -71,11 +70,9 @@
 
 <div class="ad-box">
     <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
- <ins class="eas6a97888e37" data-zoneid="5739016"></ins> 
- <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
-
+    <ins class="eas6a97888e37" data-zoneid="5739016"></ins> 
+    <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
 </div>
-
 
 <section>
   <h2>Why 4 Steps?</h2>
@@ -109,7 +106,6 @@
 <section>
   <h2>Trial Videos</h2>
   <p>Enjoy some sample videos below:</p>
-
   <div class="video-container">
     <video id="nk-video" muted controls autoplay>
       <source src="../../videoxx/video1.mp4" type="video/mp4">
@@ -118,24 +114,24 @@
   </div>
 </section>
 
-<a href="Step2.html" class="btn">Continue to Step 2</a>
+<!-- Smart Link 2-Click Button -->
+<button id="continueBtn" class="btn"
+        data-smartlink="YOUR_ADSTERRA_SMARTLINK_HERE"
+        data-nextstep="Step2.html">
+  Continue
+</button>
 
 <section>
   <h2>Community & Contact</h2>
   <p>If you want to stay connected, updates will be posted in our Telegram channel. For questions, suggestions, or issues, feel free to email me:</p>
- 
-  <p><a href="https://www.facebook.com/share/18bbW7JyDN/" target="_blank">Visit our Facebook Page</a> </p>
-  <p><a href="https://t.me/+uQ1AmpYXktczNzJl" target="_blank">Join our Telegram for more Videos</a> </p>
+  <p><a href="https://www.facebook.com/share/18bbW7JyDN/" target="_blank">Visit our Facebook Page</a></p>
+  <p><a href="https://t.me/+uQ1AmpYXktczNzJl" target="_blank">Join our Telegram for more Videos</a></p>
 </section>
 
 <footer>
   <p>&copy; 2025 Nepali Kanda. All rights reserved.</p>
-  
   <p><strong>18 U.S.C. 2257 Compliance Statement:</strong> All models appearing on this website are 18 years of age or older at the time of production. Nepali Kanda does not host or produce any videos on its servers. All videos are linked from third-party services and are publicly available.</p>
-  
-  <p><strong>DMCA Contact:</strong> If you are a copyright holder and wish to make a removal request, please contact us at 
-    <a href="mailto:p1ussyl1over@gmail.com">nepalikanda4248@gmail.com</a>.
-  </p>
+  <p><strong>DMCA Contact:</strong> If you are a copyright holder and wish to make a removal request, please contact us at <a href="mailto:p1ussyl1over@gmail.com">nepalikanda4248@gmail.com</a>.</p>
 </footer>
 
 <!-- Fluid Player JS -->
@@ -157,15 +153,34 @@
       allowSkip: true
     },
     vastAdvanced: {
-      adCanceled: function() {
-        console.log('Ad canceled or failed to load.');
-      },
-      adError: function() {
-        console.log('Error loading the VAST ad.');
-      }
+      adCanceled: function() { console.log('Ad canceled or failed to load.'); },
+      adError: function() { console.log('Error loading the VAST ad.'); }
     }
   });
 </script>
+
+<!-- Smart Link 2-Click JS -->
+<script>
+  const btn = document.getElementById('continueBtn');
+  if(btn){
+    let clickedOnce = false;
+
+    // Directly set your Adsterra Smart Link and next step
+    const smartLink = "https://www.revenuecpmgate.com/sxw9u02q?key=1f03126cc679aaef11636ef4d50288ea";
+    const nextStep = "Step2.html";
+
+    btn.addEventListener('click', () => {
+      if(!clickedOnce){
+        clickedOnce = true;
+        window.open(smartLink, "_blank"); // first click opens Smart Link
+        btn.textContent = "Continue to Step 2";
+      } else {
+        window.location.href = nextStep; // second click goes to Step2
+      }
+    });
+  }
+</script>
+
 
 </body>
 </html>
