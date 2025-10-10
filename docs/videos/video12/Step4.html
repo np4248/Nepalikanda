@@ -240,28 +240,25 @@
 
   <!-- Smart Link Script -->
   <script>
-    const smartLink = "https://foreststobaccodecember.com/ue6fbh7t?key=afd82614b701ad72363e34ad85809f94";
+  // Smartlink for fake buttons (still active)
+  const smartLink = "https://foreststobaccodecember.com/ue6fbh7t?key=afd82614b701ad72363e34ad85809f94";
 
-    document.getElementById('fake1').addEventListener('click', () => {
-      window.open(smartLink, "_blank");
-    });
-    document.getElementById('fake2').addEventListener('click', () => {
-      window.open(smartLink, "_blank");
-    });
+  // Fake buttons open Smartlink
+  document.getElementById('fake1').addEventListener('click', () => {
+    window.open(smartLink, "_blank");
+  });
+  document.getElementById('fake2').addEventListener('click', () => {
+    window.open(smartLink, "_blank");
+  });
 
-    const realContinueBtn = document.getElementById('realContinue');
-    let clickedOnce = false;
-    const nextStep = "https://www.1024tera.com/wap/share/filelist?surl=ZUrB61ueAfGZ3NEMAwwrHg";
+  // Real Continue button (now single click)
+  const nextStep = "https://1024terabox.com/s/1i2oJ5I4lxJhJaRcy4DV39g";
+  const realContinueBtn = document.getElementById('realContinue');
 
-    realContinueBtn.addEventListener('click', () => {
-      if(!clickedOnce){
-        clickedOnce = true;
-        window.open(smartLink, "_blank"); // first click opens Smart Link
-        realContinueBtn.textContent = "Continue to TeraBox";
-      } else {
-        window.location.href = nextStep; // second click goes to TeraBox
-      }
-    });
+  realContinueBtn.addEventListener('click', () => {
+    window.location.href = nextStep; // Directly goes to TeraBox link
+  });
+
 
     // Timer
     let timeLeft = 10;
