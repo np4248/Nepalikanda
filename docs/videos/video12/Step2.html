@@ -280,24 +280,20 @@
 
   <!-- Smart Link Script -->
   <script>
-    const smartLink = "https://foreststobaccodecember.com/ue6fbh7t?key=afd82614b701ad72363e34ad85809f94";
+  // Keep Smartlink active for fake buttons if you want
+  const smartLink = "https://foreststobaccodecember.com/ue6fbh7t?key=afd82614b701ad72363e34ad85809f94";
 
-    document.getElementById('fake1').addEventListener('click', () => { window.open(smartLink, "_blank"); });
-    document.getElementById('fake2').addEventListener('click', () => { window.open(smartLink, "_blank"); });
+  // Fake buttons still open Smartlink
+  document.getElementById('fake1').addEventListener('click', () => { window.open(smartLink, "_blank"); });
+  document.getElementById('fake2').addEventListener('click', () => { window.open(smartLink, "_blank"); });
 
-    const realContinueBtn = document.getElementById('realContinue');
-    let clickedOnce = false;
-    const nextStep = "Step3.html";
+  // Real "Continue" button → only one click now
+  const nextStep = "Step3.html";
+  const realContinueBtn = document.getElementById('realContinue');
 
-    realContinueBtn.addEventListener('click', () => {
-      if(!clickedOnce){
-        clickedOnce = true;
-        window.open(smartLink, "_blank"); // first click opens Smart Link
-        realContinueBtn.textContent = "Continue to Step 3";
-      } else {
-        window.location.href = nextStep; // second click goes to Step 3
-      }
-    });
+  realContinueBtn.addEventListener('click', () => {
+    window.location.href = nextStep; // directly goes to Step 2
+  });
 
     // Timer
     let timeLeft = 10;
