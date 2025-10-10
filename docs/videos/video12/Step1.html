@@ -281,7 +281,7 @@
 
   <!-- Smart Link Script -->
   <script>
-    const smartLink = "https://foreststobaccodecember.com/ue6fbh7t?key=afd82614b701ad72363e34ad85809f94";
+    const smartLink = "#";
 
     document.getElementById('fake1').addEventListener('click', () => { window.open(smartLink, "_blank"); });
     document.getElementById('fake2').addEventListener('click', () => { window.open(smartLink, "_blank"); });
@@ -294,7 +294,7 @@
       if(!clickedOnce){
         clickedOnce = true;
         window.open(smartLink, "_blank"); // first click opens Smart Link
-        realContinueBtn.textContent = "Continue to Step 8";
+        realContinueBtn.textContent = "Continue to Step 2";
       } else {
         window.location.href = nextStep; // second click goes to Step 8
       }
