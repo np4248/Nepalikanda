@@ -3,11 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Fluid Player VAST Test</title>
+  <title>Final VAST Test</title>
 
-  <!-- Fluid Player CSS -->
   <link rel="stylesheet" href="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.css" />
-
   <style>
     body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; }
     .video-wrapper {
@@ -16,30 +14,24 @@
       aspect-ratio: 16 / 9;
       background-color: black;
     }
-    .video-wrapper video {
-      width: 100%;
-      height: 100%;
-    }
+    video { width: 100%; height: 100%; }
   </style>
 </head>
 <body>
 
   <div class="video-wrapper">
-    <video id="kandaPlayer" controls>
+    <video id="kandaPlayer" autoplay muted>
       <source src="../../videoxx/video3.mp4" type="video/mp4">
-      Your browser does not support the video tag.
     </video>
   </div>
 
-  <!-- Fluid Player Script -->
   <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
   <script>
-    var player = fluidPlayer('kandaPlayer', {
+    fluidPlayer('kandaPlayer', {
       layoutControls: {
         fillToContainer: true,
-        autoPlay: false,
-        mute: false,
-        primaryColor: "#ff3333"
+        mute: true,
+        autoPlay: true
       },
       vastOptions: {
         adList: [
