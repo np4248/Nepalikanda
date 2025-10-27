@@ -1,90 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Video Test - Kanda</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Test with Backup Ads</title>
+
 <style>
   body { margin:0; background:#121212; color:#fff; font-family:sans-serif; }
-  .video-wrapper { position: relative; width:100%; padding-bottom:56.25%; margin-top:20px; }
-  #video-id { position:absolute; width:100%; height:100%; }
-  /* Floating ad */
-  #floating-ad {
-    position: absolute;
+  .video-wrapper { position: relative; width: 100%; max-width: 800px; margin: 20px auto; }
+  .video-wrapper::after { content:""; display:block; padding-top:56.25%; } /* 16:9 ratio */
+  video { position: absolute; top:0; left:0; width:100%; height:100%; }
+
+  /* Floating sticky ad */
+  .floating-ad {
+    position: fixed;
     bottom: 10px;
     right: 10px;
-    width: 200px;
+    width: 300px;
     height: 60px;
-    z-index: 9999;
-    background-color: #ff3333;
+    background: #ff3333;
     color: #fff;
     text-align: center;
     line-height: 60px;
     font-weight: bold;
-    cursor: pointer;
+    border-radius: 8px;
+    z-index: 9999;
+    display: none;
   }
+
+  /* On-pause ad overlay */
+  .pause-ad {
+    position: absolute;
+    top:0; left:0;
+    width:100%; height:100%;
+    background: rgba(0,0,0,0.8);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index: 999;
+  }
+  .pause-ad iframe { width: 80%; height: 80%; border:none; border-radius: 8px; }
 </style>
-</head>
-<body>
-
-<h1 style="text-align:center;">Kanda Video Test</h1>
-
-<!-- Video Player -->
-<div class="video-wrapper">
-  <video id="video-id" controls>
-    <source src="../../videoxx/video3.mp4" type="video/mp4">
-    Your browser does not support HTML5 video.
-  </video>
-  <!-- Floating Ad -->
-  <div id="floating-ad">Floating Ad</div>
-</div>
 
 <!-- FluidPlayer -->
 <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
+
+</head>
+<body>
+
+<div class="video-wrapper">
+  <video id="../../videoxx/video3.mp4" controls>
+    <source src="video.mp4" type="video/mp4">
+  </video>
+
+  <!-- Pause Ad Overlay -->
+  <div class="pause-ad" id="pauseAd">
+    <iframe src="" id="pauseIframe"></iframe>
+  </div>
+</div>
+
+<!-- Floating Sticky Ad -->
+<div class="floating-ad" id="floatingAd">Floating Ad Banner</div>
+
 <script>
-var myFP = fluidPlayer('video-id', {
-  layoutControls: {
-    controlBar: { autoHideTimeout: 3, animated:true, autoHide:true },
-    autoPlay: false,
-    mute: true,
-    allowDownload: false,
-    playButtonShowing: true,
-    fillToContainer: false
-  },
-  vastOptions: {
-    adList: [
-      // Pre-roll with 4 backups
-      { roll: "preRoll", vastTag: "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name" },
-      { roll: "preRoll", vastTag: "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name" },
-      { roll: "preRoll", vastTag: "https://s.magsrv.com/v1/vast.php?idzone=5757692" },
-      { roll: "preRoll", vastTag: "https://s.magsrv.com/v1/vast.php?idzone=5757698" },
+  // 4 Backup VAST links
+  const vastAds = [
+    "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
+    "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
+    "https://s.magsrv.com/v1/vast.php?idzone=5757692",
+    "https://s.magsrv.com/v1/vast.php?idzone=5757698"
+  ];
 
-      // Mid-roll at 2 min with 4 backups
-      { roll: "midRoll", vastTag: "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name", timeOffset: 120 },
-      { roll: "midRoll", vastTag: "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name", timeOffset: 120 },
-      { roll: "midRoll", vastTag: "https://s.magsrv.com/v1/vast.php?idzone=5757692", timeOffset: 120 },
-      { roll: "midRoll", vastTag: "https://s.magsrv.com/v1/vast.php?idzone=5757698", timeOffset: 120 },
+  // Fluid Player setup
+  const myFP = fluidPlayer('video-id', {
+    layoutControls: {
+      fillToContainer: true,
+      controlBar: { autoHide: true }
+    },
+    vastOptions: {
+      adList: vastAds.map(url => ({ roll: "preRoll", vastTag: url, adText: "" })),
+      adCTAText: false
+    }
+  });
 
-      // Post-roll with 4 backups
-      { roll: "postRoll", vastTag: "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name" },
-      { roll: "postRoll", vastTag: "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name" },
-      { roll: "postRoll", vastTag: "https://s.magsrv.com/v1/vast.php?idzone=5757692" },
-      { roll: "postRoll", vastTag: "https://s.magsrv.com/v1/vast.php?idzone=5757698" },
+  const videoEl = document.getElementById("video-id");
+  const pauseAd = document.getElementById("pauseAd");
+  const pauseIframe = document.getElementById("pauseIframe");
+  const floatingAd = document.getElementById("floatingAd");
 
-      // On-pause with 4 backups
-      { roll: "onPauseRoll", vastTag: "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name" },
-      { roll: "onPauseRoll", vastTag: "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name" },
-      { roll: "onPauseRoll", vastTag: "https://s.magsrv.com/v1/vast.php?idzone=5757692" },
-      { roll: "onPauseRoll", vastTag: "https://s.magsrv.com/v1/vast.php?idzone=5757698" }
-    ],
-    adCTAText: false
-  }
-});
+  // Show floating ad
+  floatingAd.style.display = "block";
 
-// Floating ad click
-document.getElementById('floating-ad').addEventListener('click', function(){
-  window.open('https://foreststobaccodecember.com/x40df45fvk?key=5326118bdc6720e1dba1aa09447b1deb','_blank');
-});
+  // On-Pause Ads logic
+  let pauseAdIndex = 0;
+  videoEl.addEventListener("pause", function() {
+    if (!videoEl.ended) {
+      pauseIframe.src = vastAds[pauseAdIndex]; // Load current backup ad
+      pauseAd.style.display = "flex";
+      pauseAdIndex = (pauseAdIndex + 1) % vastAds.length; // Rotate backup ads
+    }
+  });
+
+  // Close pause ad on play
+  videoEl.addEventListener("play", function() {
+    pauseAd.style.display = "none";
+    pauseIframe.src = "";
+  });
+
+  // Mid-roll example (every 2 mins)
+  setInterval(() => {
+    if (!videoEl.paused && !videoEl.ended) {
+      const midAdIndex = Math.floor(Math.random() * vastAds.length);
+      alert("Mid-roll ad placeholder: " + vastAds[midAdIndex]); // Replace with actual mid-roll implementation
+    }
+  }, 120000); // 2 minutes
+
 </script>
 </body>
 </html>
