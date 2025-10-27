@@ -3,9 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JW Player Test - Backup Ads</title>
+<title>JW Player Test - All Ads</title>
+
 <!-- JW Player CDN -->
 <script src="https://cdn.jwplayer.com/libraries/IDzF9Zmk.js"></script>
+
 <style>
   body {
     margin: 0;
@@ -24,8 +26,8 @@
 <div id="video-container"></div>
 
 <script>
-// Video and ad settings
-const videoFile = "../../videoxx/video3.mp4";
+// Video and VAST ad links
+const videoFile = "../../videoxx/video3.mp4"; // update path if needed
 
 const vastAds = [
   "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
@@ -34,25 +36,25 @@ const vastAds = [
   "https://s.magsrv.com/v1/vast.php?idzone=5757698"
 ];
 
-// Helper to return VAST ad list for backup
-function getAdSchedule() {
+// Convert to JW Player ad objects with skip offset
+function makeAdArray() {
   return vastAds.map(url => ({ file: url, skipoffset: "15" }));
 }
 
-// Initialize JW Player
+// JW Player setup
 jwplayer("video-container").setup({
   file: videoFile,
   width: "100%",
   aspectratio: "16:9",
-  autostart: false,
+  autostart: false, // mobile-friendly
   advertising: {
     client: "vast",
     schedule: [
-      { offset: "pre", ads: getAdSchedule() },     // Pre-roll
-      { offset: "00:30", ads: getAdSchedule() },   // Mid-roll at 30s
-      { offset: "post", ads: getAdSchedule() },    // Post-roll
-      { offset: "pause", ads: getAdSchedule() },   // Pause ads
-      { offset: "overlay", ads: getAdSchedule(), displayContainer: "video-container", displayMode: "sticky" } // Floating/sticky
+      { offset: "pre", ads: makeAdArray() },            // Pre-roll
+      { offset: "00:30", ads: makeAdArray() },         // Mid-roll at 30s
+      { offset: "post", ads: makeAdArray() },          // Post-roll
+      { offset: "pause", ads: makeAdArray() },         // Pause ads
+      { offset: "overlay", ads: makeAdArray(), displayContainer: "video-container", displayMode: "sticky" } // Sticky/floating
     ]
   }
 });
