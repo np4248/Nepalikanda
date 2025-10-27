@@ -1,63 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JW Player Test - All Ads</title>
-
-<!-- JW Player CDN -->
-<script src="https://cdn.jwplayer.com/libraries/IDzF9Zmk.js"></script>
-
-<style>
-  body {
-    margin: 0;
-    background-color: #121212;
-    color: #fff;
-    font-family: Arial, sans-serif;
-  }
-  #video-container {
-    max-width: 800px;
-    margin: 50px auto;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kanda Video Test</title>
+  <style>
+    body { margin: 0; background-color: #121212; color: #fff; font-family: Arial, sans-serif; }
+    #video-container { max-width: 900px; margin: 50px auto; position: relative; }
+    #sticky-ad {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 300px;
+      height: 60px;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      border: 2px solid #ff3333;
+      border-radius: 8px;
+      z-index: 9999;
+    }
+  </style>
+  <!-- JW Player CDN -->
+  <script src="https://cdn.jwplayer.com/libraries/IDzF9Zmk.js"></script>
 </head>
 <body>
 
-<div id="video-container"></div>
+<div id="video-container">
+  <div id="my-video"></div>
+</div>
+
+<div id="sticky-ad">Sticky/Floating Ad</div>
 
 <script>
-// Video and VAST ad links
-const videoFile = "../../videoxx/video3.mp4"; // update path if needed
+  const vastAds = [
+    "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
+    "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
+    "https://s.magsrv.com/v1/vast.php?idzone=5757692",
+    "https://s.magsrv.com/v1/vast.php?idzone=5757698"
+  ];
 
-const vastAds = [
-  "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757692",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757698"
-];
+  // JW Player setup
+  jwplayer("my-video").setup({
+    file: "../../videoxx/video3.mp4",
+    width: "100%",
+    aspectratio: "16:9",
+    autostart: false,
+    advertising: {
+      client: "vast",
+      schedule: [
+        {
+          offset: "pre",  // Pre-roll
+          tag: vastAds[0],
+          admessage: "Your ad will start in %%SECONDS%% seconds",
+          skipoffset: 15,
+          backupTag: [vastAds[1], vastAds[2], vastAds[3]]
+        },
+        {
+          offset: "2:00", // Mid-roll at 2min
+          tag: vastAds[1],
+          admessage: "Your ad will start in %%SECONDS%% seconds",
+          skipoffset: 15,
+          backupTag: [vastAds[2], vastAds[3], vastAds[0]]
+        },
+        {
+          offset: "post", // Post-roll
+          tag: vastAds[2],
+          admessage: "Your ad will start in %%SECONDS%% seconds",
+          skipoffset: 15,
+          backupTag: [vastAds[3], vastAds[0], vastAds[1]]
+        },
+        {
+          offset: "pause", // Pause-roll
+          tag: vastAds[3],
+          admessage: "Your ad will start in %%SECONDS%% seconds",
+          skipoffset: 15,
+          backupTag: [vastAds[0], vastAds[1], vastAds[2]]
+        }
+      ]
+    }
+  });
 
-// Convert to JW Player ad objects with skip offset
-function makeAdArray() {
-  return vastAds.map(url => ({ file: url, skipoffset: "15" }));
-}
-
-// JW Player setup
-jwplayer("video-container").setup({
-  file: videoFile,
-  width: "100%",
-  aspectratio: "16:9",
-  autostart: false, // mobile-friendly
-  advertising: {
-    client: "vast",
-    schedule: [
-      { offset: "pre", ads: makeAdArray() },            // Pre-roll
-      { offset: "00:30", ads: makeAdArray() },         // Mid-roll at 30s
-      { offset: "post", ads: makeAdArray() },          // Post-roll
-      { offset: "pause", ads: makeAdArray() },         // Pause ads
-      { offset: "overlay", ads: makeAdArray(), displayContainer: "video-container", displayMode: "sticky" } // Sticky/floating
-    ]
-  }
-});
+  // Sticky/Floating ad logic
+  const stickyAd = document.getElementById('sticky-ad');
+  stickyAd.style.display = 'block'; // show sticky ad
+  // You can add dynamic VAST ads in sticky with an iframe if needed
 </script>
 
 </body>
