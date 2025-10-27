@@ -1,98 +1,359 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JW Player Full Test</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Full Ad Test — Pre/Mid/Post/Pause + Sticky</title>
 
-<!-- JW Player Script -->
-<script src="https://cdn.jwplayer.com/libraries/XXXXXXXX.js"></script> <!-- Replace with your JW Player key -->
+  <!-- FluidPlayer -->
+  <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
 
-<style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #121212;
-    color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
-  #my-video {
-    width: 100%;
-    max-width: 900px;
-    aspect-ratio: 16/9; /* 16:9 ratio */
-  }
-  .sticky-ad {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    width: 200px;
-    height: 60px;
-    background: rgba(255,0,0,0.7);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    z-index: 9999;
-  }
-</style>
+  <style>
+    :root{--player-max-width:900px;}
+    body{margin:0;background:#0f0f0f;color:#fff;font-family:Arial,Helvetica,sans-serif;}
+    .container{max-width:var(--player-max-width);margin:24px auto;padding:0 12px;}
+    h1{font-size:20px;margin:8px 0 16px;text-align:center;color:#ff6666;}
+    /* 16:9 responsive wrapper */
+    .player-wrap{
+      position:relative;
+      width:100%;
+      max-width:100%;
+      margin:0 auto;
+      background:#000;
+    }
+    .player-wrap::after{content:"";display:block;padding-top:56.25%;} /* 16:9 */
+    video#mainVideo{position:absolute;top:0;left:0;width:100%;height:100%;display:block;}
+    /* Skip button (shown during ad after countdown) */
+    #skipBtn{
+      position:absolute;
+      top:8px; right:8px;
+      z-index:10010;
+      background:rgba(255,255,255,0.95);
+      color:#000;
+      border:0;padding:8px 12px;border-radius:6px;font-weight:bold;
+      display:none; cursor:pointer;
+    }
+    /* Floating/sticky small player */
+    .floating {
+      position: fixed;
+      bottom: 12px;
+      right: 12px;
+      width: 320px;
+      height: 180px; /* 16:9 */
+      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+      z-index: 10020;
+      border-radius: 6px;
+      overflow: hidden;
+      transform-origin: bottom right;
+      background: #000;
+    }
+    /* when floating, shrink video element inside */
+    .floating video { width:100%; height:100%; display:block; }
+    /* small floating controls (optional) */
+    .floating-controls { position:absolute; left:6px; bottom:6px; z-index:10030; }
+    .floating-hide { display:none; }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h1>Kanda — Full Ad Test (Autoplay muted, sticky, backups)</h1>
 
-<div id="my-video"></div>
+    <div id="playerArea" class="player-wrap">
+      <!-- skip button shown over player when ad playing and after countdown -->
+      <button id="skipBtn">Skip Ad</button>
 
-<script>
-  const backupAds = [
-    "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
-    "https://s.magsrv.com/v1/vast.php?idzone=5757692",
-    "https://s.magsrv.com/v1/vast.php?idzone=5757698"
+      <!-- main video (use your provided path) -->
+      <video id="mainVideo" muted playsinline preload="auto" autoplay>
+        <source src="../../videoxx/video3.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+
+    <p style="text-align:center; color:#ccc; margin-top:12px;">
+      Test page — pre-roll, mid-roll (2min), post-roll, pause ads. Floating when scrolled.
+    </p>
+  </div>
+
+  <script>
+  /*****************************************************************************
+   Configuration
+  *****************************************************************************/
+  const VAST_CHAIN = [
+    "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name", // primary
+    "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name", // backup1
+    "https://s.magsrv.com/v1/vast.php?idzone=5757692",           // backup2
+    "https://s.magsrv.com/v1/vast.php?idzone=5757698"            // backup3
   ];
 
-  function createAdSchedule(offset, mainTag) {
-    return {
-      offset: offset,
-      tag: mainTag,
-      skipoffset: 15,
-      backuptag: backupAds.join(",") // JW Player will try backup if main fails
-    };
-  }
+  const SKIP_AFTER_SECONDS = 15;   // show skip button after this many seconds of ad
+  const MIDROLL_INTERVAL_MS = 120000; // 2 minutes
+  // End config
 
-  const player = jwplayer("my-video").setup({
-    file: "../../videoxx/video3.mp4",
-    width: "100%",
-    aspectratio: "16:9",
-    autostart: false,
-    advertising: {
-      client: "vast",
-      schedule: [
-        createAdSchedule("pre", "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name"),
-        createAdSchedule("2:00", "https://s.magsrv.com/v1/vast.php?idzone=5757692"),
-        createAdSchedule("post", "https://s.magsrv.com/v1/vast.php?idzone=5757698")
-      ],
-      vpaidmode: "insecure"
+  /*****************************************************************************
+   Setup FluidPlayer for pre-roll usage.
+   We'll use FluidPlayer for the pre-roll chain and also to trigger ads when needed.
+  *****************************************************************************/
+  const videoEl = document.getElementById('mainVideo');
+  const skipBtn = document.getElementById('skipBtn');
+  let fp = null;
+
+  // track ad state
+  let adPlaying = false;
+  let adSkipTimer = null;
+  let adElapsedTimer = null;
+  let currentAdType = null; // "pre", "mid", "post", "pause"
+  let adAttemptIndexForType = { pre:0, mid:0, post:0, pause:0 };
+
+  // Create FluidPlayer instance (we'll initialize without adList first, then use API to set)
+  fp = fluidPlayer('mainVideo', {
+    layoutControls: {
+      fillToContainer: true,
+      controlBar: {
+        autoHide: true
+      },
+      playButtonShowing: true
+    },
+    vastOptions: {
+      adList: [], // set dynamically
+      adCTAText: false
     }
   });
 
-  // Sticky/floating ad
-  player.on('play', function() {
-    const sticky = document.createElement('div');
-    sticky.className = 'sticky-ad';
-    sticky.innerText = 'Floating Ad';
-    document.body.appendChild(sticky);
-    setTimeout(() => sticky.remove(), 15000); // Remove after 15 sec
+  /*****************************************************************************
+   Utility: attempt to play an ad for a given roll type using the chain logic.
+   rollType: "pre" | "mid" | "post" | "pause"
+   onComplete: callback when ad finished or failed all backups
+  *****************************************************************************/
+  function playAdChain(rollType, timeOffsetSeconds=0, onComplete=function(){}) {
+    currentAdType = rollType;
+    adPlaying = true;
+    // get index pointer
+    let idx = adAttemptIndexForType[rollType] || 0;
+
+    function tryIndex(i){
+      if(i >= VAST_CHAIN.length){
+        // exhausted backups - finish and call onComplete
+        adPlaying = false;
+        adAttemptIndexForType[rollType] = 0;
+        onComplete(false);
+        return;
+      }
+
+      // Prepare ad object for fluid player
+      const adObj = { roll: rollType + "Roll", vastTag: VAST_CHAIN[i], adText: "" };
+
+      // For midRoll we need timeOffset setting accepted by fp.vast API - we'll set via setAdList
+      try {
+        fp.vast.setAdList([adObj]); // set single ad attempt
+      } catch(e){
+        // if API not ready, fail this attempt and go next
+        console.warn("vast.setAdList failed:", e);
+        tryIndex(i+1);
+        return;
+      }
+
+      // play the ad
+      try {
+        fp.vast.playAds();
+      } catch(e){
+        console.warn("vast.playAds failed:", e);
+        // try next
+        tryIndex(i+1);
+        return;
+      }
+
+      // start skip timer & listen for ad events
+      showSkipCountdown(i);
+
+      // attach event listeners: adError, adEnd
+      const onAdError = function(){
+        cleanupListeners();
+        tryIndex(i+1); // next backup
+      };
+      const onAdEnd = function(){
+        cleanupListeners();
+        // reset pointer for roll type
+        adAttemptIndexForType[rollType] = 0;
+        adPlaying = false;
+        onComplete(true);
+      };
+      const onAdStart = function(){
+        // nothing special here
+      };
+
+      function cleanupListeners(){
+        try { fp.off('adError', onAdError); } catch(e){}
+        try { fp.off('adEnd', onAdEnd); } catch(e){}
+        try { fp.off('adStart', onAdStart); } catch(e){}
+        clearAdTimers();
+      }
+
+      fp.on('adError', onAdError);
+      fp.on('adEnd', onAdEnd);
+      fp.on('adStart', onAdStart);
+    } // tryIndex
+
+    tryIndex(idx);
+  } // playAdChain
+
+  /*****************************************************************************
+   Skip UI and timers
+  *****************************************************************************/
+  function showSkipCountdown(attemptIndex) {
+    // reset UI
+    skipBtn.style.display = 'none';
+    clearAdTimers();
+
+    let elapsed = 0;
+    adElapsedTimer = setInterval(()=> {
+      elapsed++;
+      if(elapsed >= SKIP_AFTER_SECONDS){
+        skipBtn.style.display = 'block';
+        clearInterval(adElapsedTimer);
+      }
+    }, 1000);
+
+    // If ad is skipped
+    skipBtn.onclick = function(){
+      // remove ads forced
+      try { fp.vast.removeAds(); } catch(e){ console.warn('removeAds failed', e); }
+      clearAdTimers();
+      adPlaying = false;
+    };
+  }
+
+  function clearAdTimers(){
+    if(adElapsedTimer){ clearInterval(adElapsedTimer); adElapsedTimer = null; }
+  }
+
+  /*****************************************************************************
+   Pre-roll: Autoplay is on. We'll start page with pre-roll attempt.
+  *****************************************************************************/
+  function startPreRollAndThenPlayContent(){
+    // ensure video is paused before starting ad
+    try { videoEl.pause(); } catch(e){}
+    playAdChain('pre', 0, function(success){
+      // after pre-roll chain completes (played or exhausted), play content
+      try { videoEl.play(); } catch(e){}
+    });
+  }
+
+  // Start pre-roll on load (autoplay is muted)
+  window.addEventListener('load', ()=> {
+    // Wait tiny moment to ensure fp is ready
+    setTimeout(()=> {
+      startPreRollAndThenPlayContent();
+    }, 300);
   });
 
-  // Pause ad example
-  player.on('pause', function() {
-    const pauseAd = jwplayer().playAd({
-      tag: backupAds[0],
-      skipoffset: 5
+  /*****************************************************************************
+   Mid-roll scheduler (every MIDROLL_INTERVAL_MS)
+   It will attempt mid-roll only when video is playing and not near end.
+  *****************************************************************************/
+  setInterval(()=> {
+    if(adPlaying) return; // don't interrupt running ads
+    if(videoEl.paused) return;
+    if(videoEl.ended) return;
+    // don't trigger if near end (last 10s)
+    if(videoEl.duration && (videoEl.duration - videoEl.currentTime) < 10) return;
+
+    // play mid-roll chain
+    playAdChain('mid', 0, function(success){
+      // resume content automatically after ad chain (playAdChain handles it)
+      try { videoEl.play(); } catch(e){}
+    });
+  }, MIDROLL_INTERVAL_MS);
+
+  /*****************************************************************************
+   Post-roll: attach listener to video ended event
+  *****************************************************************************/
+  videoEl.addEventListener('ended', function(){
+    if(adPlaying) return;
+    // play post-roll chain, but don't pause content (content ended anyway)
+    playAdChain('post', 0, function(success){
+      // after post-roll return — nothing else to do
     });
   });
-</script>
 
+  /*****************************************************************************
+   On-pause ad: show ad when user pauses (not when ended). We trigger chain.
+  *****************************************************************************/
+  videoEl.addEventListener('pause', function(){
+    if(videoEl.ended) return;
+    if(adPlaying) return;
+    // play pause-roll chain; once done, do NOT auto-play content unless user resumes
+    playAdChain('pause', 0, function(success){
+      // finished pause ad; do not auto-resume
+    });
+  });
+
+  /*****************************************************************************
+   Sticky / Floating logic: when user scrolls past player, make a small floating player
+   We'll clone the <video> element into a small floating container.
+  *****************************************************************************/
+  let isFloating = false;
+  let floatingEl = null;
+  const playerArea = document.getElementById('playerArea');
+  const origRect = () => playerArea.getBoundingClientRect();
+
+  function createFloating(){
+    if(isFloating) return;
+    isFloating = true;
+    // Pause original display and move video into a floating wrapper (detach and reattach)
+    floatingEl = document.createElement('div');
+    floatingEl.className = 'floating';
+    // clone video node (move element)
+    const newVideo = videoEl.cloneNode(true);
+    // preserve current playback state/time
+    newVideo.currentTime = videoEl.currentTime;
+    newVideo.muted = true; // keep muted autoplay
+    // stop original to avoid double audio
+    try { videoEl.pause(); } catch(e){}
+    // replace original with placeholder and insert floating
+    floatingEl.appendChild(newVideo);
+    document.body.appendChild(floatingEl);
+    // when user clicks floating video, toggle back
+    newVideo.addEventListener('click', ()=> {
+      destroyFloatingAndRestore(newVideo);
+    });
+    // start playing floating video
+    try { newVideo.play(); } catch(e){}
+  }
+
+  function destroyFloatingAndRestore(floatingVideo){
+    if(!isFloating) return;
+    // find current time in floatingVideo and move back to original video element
+    const time = floatingVideo.currentTime || 0;
+    // remove floating element
+    try { floatingEl.remove(); } catch(e){}
+    floatingEl = null;
+    isFloating = false;
+    // set main video time and resume
+    try { videoEl.currentTime = time; videoEl.play(); } catch(e){}
+  }
+
+  // watch scroll — if player is out of view (top < -height) then float
+  window.addEventListener('scroll', function(){
+    const r = origRect();
+    // if the player top is above viewport by more than half height -> float
+    if(r.top < - (r.height * 0.25) && !isFloating){
+      createFloating();
+    }
+    // if player is back into view and we are floating -> restore
+    if(r.top >= 0 && isFloating){
+      // find floating video and restore
+      const fv = document.querySelector('.floating video');
+      if(fv) destroyFloatingAndRestore(fv);
+    }
+  });
+
+  /*****************************************************************************
+   Notes & debugging helpers (console logs)
+  *****************************************************************************/
+  console.log("Ad chain configured with", VAST_CHAIN.length, "VAST tags.");
+  console.log("Skip after (sec):", SKIP_AFTER_SECONDS);
+  console.log("Midroll interval (ms):", MIDROLL_INTERVAL_MS);
+
+  </script>
 </body>
 </html>
