@@ -1,135 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kanda Video Test</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Video Test - Kanda</title>
+
+  <!-- Video.js CSS -->
+  <link href="https://vjs.zencdn.net/8.0.0/video-js.css" rel="stylesheet" />
+
   <style>
-    body { margin:0; font-family:sans-serif; background:#121212; color:#fff; }
-    #video-container { position: relative; max-width: 900px; margin: 20px auto; }
-    #sticky-ad { position: fixed; bottom: 10px; right: 10px; width: 300px; height: 60px; z-index: 9999; }
-    #pause-ad-container { position:absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; z-index:9999; }
-    #pauseAdPlayer { width: 80%; height: 50%; }
+    body { margin:0; background:#121212; color:#fff; font-family:Arial, sans-serif; }
+    .video-container { max-width: 900px; margin: 40px auto; }
+    .video-js { width: 100%; height: auto; }
+    .sticky-ad { position: fixed; bottom: 10px; right: 10px; width: 200px; height: 100px; background:#ff3333; color:#fff; text-align:center; line-height:100px; z-index:9999; display:none; }
   </style>
-  <script src="https://cdn.jwplayer.com/libraries/YOUR_JWPLAYER_KEY.js"></script>
+
+  <!-- Video.js JS -->
+  <script src="https://vjs.zencdn.net/8.0.0/video.min.js"></script>
+  <!-- IMA plugin -->
+  <script src="https://cdn.jsdelivr.net/npm/videojs-ima@1.8.0/dist/videojs.ima.min.js"></script>
 </head>
 <body>
 
-<div id="video-container">
-  <div id="my-video"></div>
-</div>
+  <div class="video-container">
+    <video
+      id="my-video"
+      class="video-js vjs-default-skin"
+      controls
+      preload="auto"
+      poster=""
+      data-setup='{}'>
+      <source src="../../videoxx/video3.mp4" type="video/mp4" />
+    </video>
+  </div>
 
-<div id="sticky-ad"></div>
+  <div class="sticky-ad" id="stickyAd">Sticky Ad</div>
 
-<script>
-const videoFile = "../../videoxx/video3.mp4";
+  <script>
+    var player = videojs('my-video');
 
-const preAds = [
-  "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757692",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757698"
-];
+    // IMA plugin setup
+    player.ima({
+      adTagUrl: 'https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name', // pre-roll priority 1
+      adsRenderingSettings: {
+        enablePreloading: true,
+        uiElements: ['countdown', 'skip']
+      },
+      locale: 'en'
+    });
 
-const midAds = [
-  "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
-  "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757692",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757698"
-];
+    // Backup ads array for each roll
+    const vastBackup = {
+      preRoll: [
+        'https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name',
+        'https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name',
+        'https://s.magsrv.com/v1/vast.php?idzone=5757692',
+        'https://s.magsrv.com/v1/vast.php?idzone=5757698'
+      ],
+      midRoll: [
+        'https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name',
+        'https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name',
+        'https://s.magsrv.com/v1/vast.php?idzone=5757692',
+        'https://s.magsrv.com/v1/vast.php?idzone=5757698'
+      ],
+      postRoll: [
+        'https://s.magsrv.com/v1/vast.php?idzone=5757692',
+        'https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name',
+        'https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name',
+        'https://s.magsrv.com/v1/vast.php?idzone=5757698'
+      ],
+      pauseRoll: [
+        'https://s.magsrv.com/v1/vast.php?idzone=5757698',
+        'https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name',
+        'https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name',
+        'https://s.magsrv.com/v1/vast.php?idzone=5757692'
+      ]
+    };
 
-const postAds = [
-  "https://s.magsrv.com/v1/vast.php?idzone=5757692",
-  "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757698"
-];
+    // Function to try backup ads if primary fails
+    function playBackup(adType, index = 0) {
+      if (index >= vastBackup[adType].length) return;
+      player.ima.changeAdTag(vastBackup[adType][index]);
+      player.ima.requestAds();
+      player.ima.onAdError(() => {
+        playBackup(adType, index + 1);
+      });
+    }
 
-const pauseAds = [
-  "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757692",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757698"
-];
-
-const stickyAds = [
-  "https://s.magsrv.com/v1/vast.php?idzone=5757698",
-  "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757692"
-];
-
-// Setup main video
-const player = jwplayer("my-video").setup({
-  file: videoFile,
-  width: "100%",
-  aspectratio: "16:9",
-  advertising: {
-    client: "vast",
-    tag: preAds[0],
-    schedule: [
-      { offset: "pre", tag: preAds[0], backupTag: preAds.slice(1) },
-      { offset: "50%", tag: midAds[0], backupTag: midAds.slice(1) },
-      { offset: "post", tag: postAds[0], backupTag: postAds.slice(1) }
-    ],
-    skipoffset: 15
-  }
-});
-
-// Pause-roll ad
-player.on('pause', () => {
-  if (!document.getElementById('pause-ad-container')) {
-    const overlay = document.createElement('div');
-    overlay.id = 'pause-ad-container';
-    overlay.style.position = 'absolute';
-    overlay.style.top = '0';
-    overlay.style.left = '0';
-    overlay.style.width = '100%';
-    overlay.style.height = '100%';
-    overlay.style.background = 'rgba(0,0,0,0.8)';
-    overlay.style.display = 'flex';
-    overlay.style.justifyContent = 'center';
-    overlay.style.alignItems = 'center';
-    overlay.style.zIndex = '9999';
-    document.getElementById('video-container').appendChild(overlay);
-
-    const adDiv = document.createElement('div');
-    adDiv.id = 'pauseAdPlayer';
-    adDiv.style.width = '80%';
-    adDiv.style.height = '50%';
-    overlay.appendChild(adDiv);
-
-    jwplayer('pauseAdPlayer').setup({
-      file: pauseAds[0],
-      width: '100%',
-      height: '100%',
-      advertising: {
-        client: 'vast',
-        tag: pauseAds[0],
-        backupTag: pauseAds.slice(1),
-        skipoffset: 15
+    // Mid-roll at 2 mins
+    player.on('timeupdate', function() {
+      if(player.currentTime() >= 120 && !player.midRollPlayed) {
+        player.midRollPlayed = true;
+        playBackup('midRoll');
       }
     });
 
-    jwplayer('pauseAdPlayer').on('complete', () => {
-      overlay.remove();
+    // Post-roll
+    player.on('ended', function() {
+      playBackup('postRoll');
     });
-  }
-});
 
-// Sticky/floating ad
-jwplayer("sticky-ad").setup({
-  file: stickyAds[0],
-  width: 300,
-  height: 60,
-  advertising: {
-    client: 'vast',
-    tag: stickyAds[0],
-    backupTag: stickyAds.slice(1),
-    skipoffset: 15
-  }
-});
-</script>
+    // Pause-roll overlay
+    player.on('pause', function() {
+      if(!player.pauseRollPlayed) {
+        player.pauseRollPlayed = true;
+        playBackup('pauseRoll');
+      }
+    });
+
+    // Sticky ad
+    player.on('play', function() {
+      var sticky = document.getElementById('stickyAd');
+      sticky.style.display = 'block';
+      setTimeout(()=>{ sticky.style.display = 'none'; }, 15000);
+    });
+
+  </script>
 
 </body>
 </html>
