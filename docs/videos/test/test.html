@@ -3,25 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JW Player Test - Kanda Videos</title>
-
-<script src="https://cdn.jwplayer.com/libraries/IDzF9Zmk.js"></script> <!-- Free JW Player library -->
-
+<title>JW Player Test - Backup Ads</title>
+<!-- JW Player CDN -->
+<script src="https://cdn.jwplayer.com/libraries/IDzF9Zmk.js"></script>
 <style>
-  body { background: #121212; color: #fff; font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 20px;}
-  h1 { color: #ff3333; }
-  #video-wrapper { max-width: 900px; margin: 0 auto; }
+  body {
+    margin: 0;
+    background-color: #121212;
+    color: #fff;
+    font-family: Arial, sans-serif;
+  }
+  #video-container {
+    max-width: 800px;
+    margin: 50px auto;
+  }
 </style>
 </head>
 <body>
 
-<h1>Kanda Videos - JW Player Test</h1>
-<p>Click play to start the video and see pre-roll ads.</p>
-
-<div id="video-wrapper"></div>
+<div id="video-container"></div>
 
 <script>
-// Your 4 VAST ad links
+// Video and ad settings
+const videoFile = "../../videoxx/video3.mp4";
+
 const vastAds = [
   "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
   "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
@@ -29,48 +34,28 @@ const vastAds = [
   "https://s.magsrv.com/v1/vast.php?idzone=5757698"
 ];
 
-// Function to get the first available VAST ad
-function getVastAd(index=0){
-  if(index >= vastAds.length) return null;
-  return vastAds[index];
+// Helper to return VAST ad list for backup
+function getAdSchedule() {
+  return vastAds.map(url => ({ file: url, skipoffset: "15" }));
 }
 
-// JW Player setup
-const player = jwplayer("video-wrapper").setup({
-  file: "../../videoxx/video3.mp4",   // your local video
+// Initialize JW Player
+jwplayer("video-container").setup({
+  file: videoFile,
   width: "100%",
   aspectratio: "16:9",
-  autostart: false, // autoplay off
-  controls: true,
+  autostart: false,
   advertising: {
     client: "vast",
     schedule: [
-      { offset: "pre", tag: getVastAd(0) },       // Pre-roll
-      { offset: "2:00", tag: getVastAd(1) },      // Mid-roll at 2 min
-      { offset: "post", tag: getVastAd(2) },      // Post-roll
-      { offset: "pause", tag: getVastAd(3) }      // Pause ad
-    ],
-    admessage: "Advertisement: Click skip after 15 seconds",
-    skipoffset: 15
-  },
-  floating: {
-    autostart: true,
-    dismissible: true,
-    viewable: true,
-    share: false
+      { offset: "pre", ads: getAdSchedule() },     // Pre-roll
+      { offset: "00:30", ads: getAdSchedule() },   // Mid-roll at 30s
+      { offset: "post", ads: getAdSchedule() },    // Post-roll
+      { offset: "pause", ads: getAdSchedule() },   // Pause ads
+      { offset: "overlay", ads: getAdSchedule(), displayContainer: "video-container", displayMode: "sticky" } // Floating/sticky
+    ]
   }
 });
-
-// Optional: fallback if first ad fails, try next one
-player.on('adError', function(e){
-  console.log("Ad failed, trying next:", e);
-  let schedule = player.getConfig().advertising.schedule;
-  schedule.forEach((ad, i) => {
-    if(!ad.tag && vastAds[i]) ad.tag = vastAds[i]; // assign backup
-  });
-  player.load(player.getPlaylist());
-});
-
 </script>
 
 </body>
