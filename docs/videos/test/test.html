@@ -1,55 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Video Test - Pre-roll & Mid-roll</title>
-  <style>
-    body { margin:0; font-family: Arial, sans-serif; background: #121212; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; }
-    .video-wrapper { width: 90%; max-width: 800px; aspect-ratio: 16/9; }
-    video { width: 100%; height: 100%; background: #000; }
-  </style>
-  <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Video Test - Pre-roll with Backup Ads</title>
+<style>
+  body {
+    margin: 0;
+    background-color: #121212;
+    color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  .video-wrapper {
+    width: 100%;
+    max-width: 800px;
+    aspect-ratio: 16 / 9;
+    position: relative;
+    background-color: #000;
+  }
+
+  video {
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+  }
+
+  #skipBtn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255,255,255,0.8);
+    color: #000;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: none;
+    font-weight: bold;
+    z-index: 999;
+  }
+</style>
+
+<!-- FluidPlayer -->
+<script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
 </head>
 <body>
 
-  <div class="video-wrapper">
-    <video id="video-id" controls>
-      <source src="video.mp4" type="video/mp4">
-      Your browser does not support the video tag.
-    </video>
-  </div>
+<h1>Video Test with Pre-roll Backup Ads</h1>
 
-  <script>
-    var player = fluidPlayer('video-id', {
-      layoutControls: {
-        fillToContainer: true,
-        allowDownload: false,
-        playButtonShowing: true,
-        controlBar: { autoHide: true }
-      },
-      vastOptions: {
-        adList: [
-          {
-            roll: "preRoll",
-            vastTag: "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
-            backupVastTag: "https://s.magsrv.com/v1/vast.php?idzone=123456&ex_av=name",
-            skipAfter: 15
-          },
-          {
-            roll: "midRoll",
-            vastTag: "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
-            time: 120 // every 2 minutes
-          },
-          {
-            roll: "onPauseRoll",
-            vastTag: "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name"
-          }
-        ],
-        adCTAText: false
-      }
-    });
-  </script>
+<div class="video-wrapper">
+  <video id="video-id" controls>
+    <source src="../../videoxx/video3.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <button id="skipBtn">Skip Ad</button>
+</div>
+
+<script>
+  const vastAds = [
+    "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name", // primary
+    "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name", // backup 1
+    "https://s.magsrv.com/v1/vast.php?idzone=5757692",             // backup 2
+    "https://s.magsrv.com/v1/vast.php?idzone=5757698"              // backup 3
+  ];
+
+  let currentAdIndex = 0;
+
+  const player = fluidPlayer('video-id', {
+    layoutControls: {
+      controlBar: { autoHide: true },
+      htmlOnPauseBlock: { html: null }
+    },
+    vastOptions: {
+      adList: [
+        { roll: "preRoll", vastTag: vastAds[currentAdIndex], adText: "" }
+      ],
+      adCTAText: false
+    }
+  });
+
+  const skipBtn = document.getElementById('skipBtn');
+
+  // Show skip button after 15 sec
+  const showSkip = () => { skipBtn.style.display = "block"; }
+  setTimeout(showSkip, 15000);
+
+  skipBtn.addEventListener('click', () => {
+    player.vast.removeAds(); // skip current ad
+    player.play();
+  });
+
+  // Backup ad logic: if ad fails, try next
+  player.on('adError', () => {
+    currentAdIndex++;
+    if(currentAdIndex < vastAds.length){
+      player.vast.setAdList([{roll:"preRoll", vastTag: vastAds[currentAdIndex]}]);
+      player.vast.playAds();
+    } else {
+      player.play(); // no ad available
+    }
+  });
+</script>
 
 </body>
 </html>
