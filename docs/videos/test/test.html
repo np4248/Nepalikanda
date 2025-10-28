@@ -1,121 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Video Test - Kanda</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Video.js + IMA — Fixed (pre/mid/post + backups)</title>
 
-  <!-- Video.js CSS -->
-  <link href="https://vjs.zencdn.net/8.0.0/video-js.css" rel="stylesheet" />
+<!-- Video.js 7 (stable) CSS -->
+<link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
 
-  <style>
-    body { margin:0; background:#121212; color:#fff; font-family:Arial, sans-serif; }
-    .video-container { max-width: 900px; margin: 40px auto; }
-    .video-js { width: 100%; height: auto; }
-    .sticky-ad { position: fixed; bottom: 10px; right: 10px; width: 200px; height: 100px; background:#ff3333; color:#fff; text-align:center; line-height:100px; z-index:9999; display:none; }
-  </style>
+<style>
+  body { margin:0; background:#121212; color:#fff; font-family: Arial, Helvetica, sans-serif; }
+  .container { max-width: 900px; margin: 28px auto; padding: 0 12px; }
+  h1 { color:#ff6666; text-align:center; font-size:20px; margin-bottom:12px; }
 
-  <!-- Video.js JS -->
-  <script src="https://vjs.zencdn.net/8.0.0/video.min.js"></script>
-  <!-- IMA plugin -->
-  <script src="https://cdn.jsdelivr.net/npm/videojs-ima@1.8.0/dist/videojs.ima.min.js"></script>
+  /* Responsive 16:9 wrapper using padding trick to guarantee visible height */
+  .player-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+  .player-wrap::after { content:""; display:block; padding-top:56.25%; } /* 16:9 */
+  /* Force the video element to fill the wrapper */
+  .video-js { position: absolute !important; top:0; left:0; width:100% !important; height:100% !important; }
+
+  /* Sticky/floating ad placeholder */
+  #stickyAd {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    width: 300px;
+    height: 60px;
+    background: rgba(255,51,51,0.95);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+    z-index:99999;
+    border-radius:6px;
+    display:none;
+  }
+</style>
 </head>
 <body>
+  <div class="container">
+    <h1>Kanda — Video.js + IMA (fixed)</h1>
 
-  <div class="video-container">
-    <video
-      id="my-video"
-      class="video-js vjs-default-skin"
-      controls
-      preload="auto"
-      poster=""
-      data-setup='{}'>
-      <source src="../../videoxx/video3.mp4" type="video/mp4" />
-    </video>
+    <div class="player-wrap">
+      <!-- video element -->
+      <video
+        id="my-video"
+        class="video-js vjs-default-skin"
+        controls
+        playsinline
+        preload="auto"
+        poster=""
+        data-setup='{}'>
+        <source src="../../videoxx/video3.mp4" type="video/mp4" />
+        Your browser does not support HTML5 video.
+      </video>
+    </div>
+
+    <div id="stickyAd">Floating Sticky Ad</div>
   </div>
 
-  <div class="sticky-ad" id="stickyAd">Sticky Ad</div>
+  <!-- Video.js + IMA plugin -->
+  <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/videojs-ima@1.8.0/dist/videojs.ima.min.js"></script>
 
   <script>
-    var player = videojs('my-video');
+  (function(){
+    // VAST chain (4 backups). We will rotate if ad fails.
+    const VAST_CHAIN = [
+      "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
+      "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
+      "https://s.magsrv.com/v1/vast.php?idzone=5757692",
+      "https://s.magsrv.com/v1/vast.php?idzone=5757698"
+    ];
 
-    // IMA plugin setup
-    player.ima({
-      adTagUrl: 'https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name', // pre-roll priority 1
-      adsRenderingSettings: {
-        enablePreloading: true,
-        uiElements: ['countdown', 'skip']
-      },
-      locale: 'en'
-    });
+    // Helper to get ad url for a roll with priority starting index
+    function buildAdListForRoll(priorityIndex) {
+      // return array rotated so priorityIndex is first
+      const out = [];
+      for (let i = 0; i < VAST_CHAIN.length; i++) {
+        out.push(VAST_CHAIN[(priorityIndex + i) % VAST_CHAIN.length]);
+      }
+      return out;
+    }
 
-    // Backup ads array for each roll
-    const vastBackup = {
-      preRoll: [
-        'https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name',
-        'https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name',
-        'https://s.magsrv.com/v1/vast.php?idzone=5757692',
-        'https://s.magsrv.com/v1/vast.php?idzone=5757698'
-      ],
-      midRoll: [
-        'https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name',
-        'https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name',
-        'https://s.magsrv.com/v1/vast.php?idzone=5757692',
-        'https://s.magsrv.com/v1/vast.php?idzone=5757698'
-      ],
-      postRoll: [
-        'https://s.magsrv.com/v1/vast.php?idzone=5757692',
-        'https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name',
-        'https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name',
-        'https://s.magsrv.com/v1/vast.php?idzone=5757698'
-      ],
-      pauseRoll: [
-        'https://s.magsrv.com/v1/vast.php?idzone=5757698',
-        'https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name',
-        'https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name',
-        'https://s.magsrv.com/v1/vast.php?idzone=5757692'
-      ]
+    // --- Player init ---
+    const player = videojs('my-video');
+
+    // keep track if we already requested pre-roll (so user click only triggers once)
+    let preRollRequested = false;
+
+    // We'll use an index map to make each roll start from different priority (to avoid conflicts)
+    const priorityMap = {
+      pre: 0,   // pre-roll priority starts at VAST_CHAIN[0]
+      mid: 1,   // mid-roll priority starts at VAST_CHAIN[1]
+      post: 2,  // post-roll priority starts at VAST_CHAIN[2]
+      pause: 3  // pause-roll priority starts at VAST_CHAIN[3]
     };
 
-    // Function to try backup ads if primary fails
-    function playBackup(adType, index = 0) {
-      if (index >= vastBackup[adType].length) return;
-      player.ima.changeAdTag(vastBackup[adType][index]);
-      player.ima.requestAds();
-      player.ima.onAdError(() => {
-        playBackup(adType, index + 1);
+    // function to attempt an ad using the IMA plugin with a backup chain for a roll type
+    function requestAdWithBackups(rollKind, attemptIndex = 0) {
+      if (attemptIndex >= VAST_CHAIN.length) {
+        console.warn(`[${rollKind}] exhausted all backups`);
+        return Promise.resolve(false);
+      }
+
+      // get the ad URL for this attempt using priority rotation per roll
+      const adUrl = buildAdListForRoll(priorityMap[rollKind])[attemptIndex];
+      return new Promise((resolve) => {
+        try {
+          // set ad tag and request via IMA plugin
+          player.ima.setAdTag(adUrl);        // change the ad tag
+          player.ima.requestAds();           // request it
+        } catch (err) {
+          console.warn('IMA request failed to start:', err);
+          // try next backup
+          resolve(requestAdWithBackups(rollKind, attemptIndex + 1));
+          return;
+        }
+
+        // listen for ad events: started, complete, aderror
+        const onAdError = function() {
+          cleanup();
+          console.warn(`[${rollKind}] ad error on attempt ${attemptIndex}, trying next`);
+          resolve(requestAdWithBackups(rollKind, attemptIndex + 1));
+        };
+        const onAdComplete = function() {
+          cleanup();
+          resolve(true);
+        };
+        const onAdsCancelled = function() {
+          cleanup();
+          resolve(false);
+        };
+
+        function cleanup(){
+          player.ima.off('adserror', onAdError);
+          player.ima.off('adsready', onAdsReady);
+          player.ima.off('adscancelled', onAdsCancelled);
+          player.ima.off('adscompleted', onAdComplete);
+        }
+
+        // adsready means adsready to start, adscompleted when finished
+        const onAdsReady = function() {
+          // start ad playback
+          try { player.ima.startAds(); } catch(e){ /* ignore */ }
+        };
+
+        player.ima.on('adsready', onAdsReady);
+        player.ima.on('adserror', onAdError);
+        player.ima.on('adscancelled', onAdsCancelled);
+        player.ima.on('adscompleted', onAdComplete);
+
+        // Note: the promise will resolve by the handlers above
       });
     }
 
-    // Mid-roll at 2 mins
-    player.on('timeupdate', function() {
-      if(player.currentTime() >= 120 && !player.midRollPlayed) {
-        player.midRollPlayed = true;
-        playBackup('midRoll');
-      }
+    // Configure IMA plugin (initial adTagUrl left blank; we'll set dynamically)
+    player.ima({
+      id: 'my-video',      // ad display container id
+      adLabel: 'Advertisement',
+      locale: 'en'
+      // no adTagUrl here, we'll set when requesting
     });
 
-    // Post-roll
-    player.on('ended', function() {
-      playBackup('postRoll');
-    });
-
-    // Pause-roll overlay
-    player.on('pause', function() {
-      if(!player.pauseRollPlayed) {
-        player.pauseRollPlayed = true;
-        playBackup('pauseRoll');
-      }
-    });
-
-    // Sticky ad
+    // show sticky placeholder on play
+    const sticky = document.getElementById('stickyAd');
     player.on('play', function() {
-      var sticky = document.getElementById('stickyAd');
-      sticky.style.display = 'block';
-      setTimeout(()=>{ sticky.style.display = 'none'; }, 15000);
+      sticky.style.display = 'flex';
+      // hide after 12-15s
+      setTimeout(()=> sticky.style.display = 'none', 15000);
     });
 
-  </script>
+    // Pre-roll: do not autoplay ad request — wait for first user play
+    player.on('play', async function() {
+      if (preRollRequested) return;
+      preRollRequested = true;
 
+      // pause content (if it tried to play) to run ad first
+      player.pause();
+
+      // request pre-roll with backups
+      const preOk = await requestAdWithBackups('pre', 0);
+      // once ad chain finished (played or exhausted) resume content
+      try { player.play(); } catch(e){}
+    });
+
+    // Mid-roll example: run at 120s using timeupdate check
+    let midTriggered = false;
+    player.on('timeupdate', async function() {
+      if (midTriggered) return;
+      if (!player.duration()) return; // not ready
+      const now = player.currentTime();
+      if (now >= 120 && now <= (player.duration() - 5)) {
+        midTriggered = true;
+        player.pause();
+        await requestAdWithBackups('mid', 0);
+        try { player.play(); } catch(e){}
+      }
+    });
+
+    // Post-roll: on ended
+    player.on('ended', async function(){
+      // play post-roll chain (doesn't need to resume)
+      await requestAdWithBackups('post', 0);
+    });
+
+    // Pause-roll: show when user pauses (but avoid liking when ended)
+    player.on('pause', async function(){
+      if (player.ended()) return;
+      // If ad currently playing, ignore
+      // request pause-roll but do not auto-play after
+      await requestAdWithBackups('pause', 0);
+    });
+
+    // Small note: video look/display fix done via CSS "player-wrap" and .video-js absolute sizing.
+
+    // Debug logs
+    console.log('Video.js + IMA initialized. VAST chain length:', VAST_CHAIN.length);
+
+  })();
+  </script>
 </body>
 </html>
