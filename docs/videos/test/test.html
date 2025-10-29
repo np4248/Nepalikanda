@@ -1,142 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kanda — JW Player Local + Ads Test</title>
-
-<!-- JW Player -->
-<script src="https://cdn.jwplayer.com/libraries/YOUR-LIBRARY-KEY.js"></script>
-
-<style>
-body { margin:0; background:#121212; color:#eee; font-family:Arial,Helvetica,sans-serif; }
-.page { max-width:900px; margin:20px auto; padding:12px; }
-h1 { color:#ff6666; text-align:center; margin-bottom:12px; }
-
-#stickyContainer { position:fixed; right:12px; bottom:12px; width:320px; height:180px; background:#000; z-index:20000; box-shadow:0 10px 30px rgba(0,0,0,0.6); border-radius:8px; overflow:hidden; display:none; }
-#stickyHeader { height:28px; background:rgba(0,0,0,0.5); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; }
-
-#pauseOverlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.8); z-index:30000; }
-#pauseSlot { width:80%; height:60%; background:#000; border-radius:8px; overflow:hidden; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kanda Video Test</title>
+  <style>
+    body { margin: 0; background-color: #121212; color: #fff; font-family: Arial, sans-serif; }
+    #video-container { max-width: 900px; margin: 50px auto; position: relative; }
+    #sticky-ad {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 300px;
+      height: 60px;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      border: 2px solid #ff3333;
+      border-radius: 8px;
+      z-index: 9999;
+    }
+  </style>
+  <!-- JW Player CDN -->
+  <script src="https://cdn.jwplayer.com/libraries/IDzF9Zmk.js"></script>
 </head>
 <body>
 
-<div class="page">
-  <h1>Kanda — Local Video + Ads Test</h1>
-  <div id="mainPlayer"></div>
+<div id="video-container">
+  <div id="my-video"></div>
 </div>
 
-<div id="stickyContainer">
-  <div id="stickyHeader">Sponsored</div>
-  <div id="stickyPlayer"></div>
-</div>
-
-<div id="pauseOverlay"><div id="pauseSlot"></div></div>
+<div id="sticky-ad">Sticky/Floating Ad</div>
 
 <script>
-const localVideo = "../../videoxx/video3.mp4"; // your local video
-const testVideo = "https://content.jwplatform.com/videos/HkauGhRi-640.mp4"; // public HTTPS video for ad testing
+  const vastAds = [
+    "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
+    "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
+    "https://s.magsrv.com/v1/vast.php?idzone=5757692",
+    "https://s.magsrv.com/v1/vast.php?idzone=5757698"
+  ];
 
-const VAST_CHAIN = [
-  "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757692&ex_av=name",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757698&ex_av=name"
-];
+  // JW Player setup
+  jwplayer("my-video").setup({
+    file: "../../videoxx/video3.mp4",
+    width: "100%",
+    aspectratio: "16:9",
+    autostart: false,
+    advertising: {
+      client: "vast",
+      schedule: [
+        {
+          offset: "pre",  // Pre-roll
+          tag: vastAds[0],
+          admessage: "Your ad will start in %%SECONDS%% seconds",
+          skipoffset: 15,
+          backupTag: [vastAds[1], vastAds[2], vastAds[3]]
+        },
+        {
+          offset: "2:00", // Mid-roll at 2min
+          tag: vastAds[1],
+          admessage: "Your ad will start in %%SECONDS%% seconds",
+          skipoffset: 15,
+          backupTag: [vastAds[2], vastAds[3], vastAds[0]]
+        },
+        {
+          offset: "post", // Post-roll
+          tag: vastAds[2],
+          admessage: "Your ad will start in %%SECONDS%% seconds",
+          skipoffset: 15,
+          backupTag: [vastAds[3], vastAds[0], vastAds[1]]
+        },
+        {
+          offset: "pause", // Pause-roll
+          tag: vastAds[3],
+          admessage: "Your ad will start in %%SECONDS%% seconds",
+          skipoffset: 15,
+          backupTag: [vastAds[0], vastAds[1], vastAds[2]]
+        }
+      ]
+    }
+  });
 
-const PRIORITY_START = { pre:0, mid:1, post:2, pause:3, sticky:0 };
-
-function rotatedList(roll){
-  const start = PRIORITY_START[roll] % VAST_CHAIN.length;
-  const out=[];
-  for(let i=0;i<VAST_CHAIN.length;i++) out.push(VAST_CHAIN[(start+i)%VAST_CHAIN.length]);
-  return out;
-}
-
-async function playVAST(playerInstance, roll){
-  const tags = rotatedList(roll);
-  for(let tag of tags){
-    try{
-      await new Promise(res=>{
-        playerInstance.setConfig({ advertising: { client:"vast", tag: tag } });
-        playerInstance.playAd().then(()=>res(true)).catch(()=>res(false));
-      });
-      break;
-    }catch(e){ continue; }
-  }
-}
-
-// ---------------- Main Player ----------------
-const mainPlayer = jwplayer("mainPlayer").setup({
-  file: localVideo, // first try local file
-  width: "100%",
-  aspectratio: "16:9",
-  autostart: false
-});
-
-// Pre-roll
-let preDone=false;
-mainPlayer.on('play', async ()=>{
-  if(!preDone){
-    preDone=true;
-    mainPlayer.pause();
-    // switch to test video for ads to avoid CORS issues
-    mainPlayer.load([{ file: testVideo }]);
-    await playVAST(mainPlayer,'pre');
-    mainPlayer.load([{ file: localVideo }]); // back to local video
-    mainPlayer.play();
-  }
-});
-
-// Mid-roll at 50%
-let midDone=false;
-mainPlayer.on('time', async (e)=>{
-  if(!midDone && e.position>=mainPlayer.getDuration()/2){
-    midDone=true;
-    mainPlayer.pause();
-    mainPlayer.load([{ file: testVideo }]);
-    await playVAST(mainPlayer,'mid');
-    mainPlayer.load([{ file: localVideo }]);
-    mainPlayer.play();
-    showSticky();
-  }
-});
-
-// Post-roll
-mainPlayer.on('complete', async ()=>{
-  mainPlayer.load([{ file: testVideo }]);
-  await playVAST(mainPlayer,'post');
-});
-
-// ---------------- Pause Overlay ----------------
-const pauseOverlay = document.getElementById('pauseOverlay');
-const pauseSlot = document.getElementById('pauseSlot');
-let pausePlayer=null;
-
-mainPlayer.on('pause', async ()=>{
-  if(mainPlayer.getState()==="COMPLETE") return;
-  pauseOverlay.style.display="flex";
-  if(!pausePlayer){
-    const div = document.createElement('div'); div.id="pauseInner"; pauseSlot.appendChild(div);
-    pausePlayer = jwplayer("pauseInner").setup({ file: testVideo, width:"100%", height:"100%", autostart:true, mute:false });
-  }
-  await playVAST(pausePlayer,'pause');
-  pauseOverlay.style.display="none";
-});
-
-mainPlayer.on('play', ()=>{ pauseOverlay.style.display="none"; if(pausePlayer) pausePlayer.pause(); });
-
-// ---------------- Sticky Mini-Player ----------------
-const stickyContainer = document.getElementById('stickyContainer');
-let stickyPlayer=null;
-async function showSticky(){
-  stickyContainer.style.display="block";
-  if(!stickyPlayer){
-    stickyPlayer = jwplayer("stickyPlayer").setup({ file: testVideo, width:"100%", height:"100%", autostart:true, mute:true });
-  }
-  await playVAST(stickyPlayer,'sticky');
-}
+  // Sticky/Floating ad logic
+  const stickyAd = document.getElementById('sticky-ad');
+  stickyAd.style.display = 'block'; // show sticky ad
+  // You can add dynamic VAST ads in sticky with an iframe if needed
 </script>
 
 </body>
