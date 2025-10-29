@@ -3,41 +3,33 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Kanda — Final Video.js + IMA (priority backup + sticky)</title>
+  <title>Kanda — High CPM JW + Video.js + IMA</title>
+
+  <!-- JW Player -->
+  <script src="https://cdn.jwplayer.com/libraries/your-library.js"></script>
 
   <!-- Video.js CSS -->
   <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
 
   <style>
-    :root { --max-width:900px; }
     body { margin:0; background:#121212; color:#eee; font-family:Arial,Helvetica,sans-serif; }
-    .page { max-width:var(--max-width); margin:20px auto; padding:12px; }
+    .page { max-width:900px; margin:20px auto; padding:12px; }
     h1 { color:#ff6666; text-align:center; margin-bottom:8px; }
 
-    /* 16:9 responsive wrapper */
+    /* Video.js wrapper */
     .player-wrap { position:relative; width:100%; max-width:100%; margin:0 auto; }
     .player-wrap::after { content:""; display:block; padding-top:56.25%; } /* 16:9 */
     .video-js { position:absolute !important; top:0; left:0; width:100% !important; height:100% !important; }
 
     /* pause overlay */
-    #pauseOverlay {
-      position:absolute; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.75); z-index:1200;
-    }
+    #pauseOverlay { position:absolute; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.75); z-index:1200; }
     #pauseSlot { width:86%; height:66%; background:#000; border-radius:8px; overflow:hidden; }
 
     /* sticky floating mini-player bottom-right */
     #stickyContainer {
-      position:fixed;
-      right:12px;
-      bottom:12px;
-      width:320px;
-      height:180px; /* 16:9 */
-      background:#000;
-      z-index:20000;
-      box-shadow:0 10px 30px rgba(0,0,0,0.6);
-      border-radius:8px;
-      overflow:hidden;
-      display:none;
+      position:fixed; right:12px; bottom:12px; width:320px; height:180px;
+      background:#000; z-index:20000; box-shadow:0 10px 30px rgba(0,0,0,0.6);
+      border-radius:8px; overflow:hidden; display:none;
     }
     #stickyHeader { height:28px; background:rgba(0,0,0,0.5); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; }
     .small-player .video-js { position:absolute !important; top:28px !important; height: calc(100% - 28px) !important; width:100% !important; left:0 !important; }
@@ -45,41 +37,45 @@
 </head>
 <body>
   <div class="page">
-    <h1>Kanda — Final Test</h1>
+    <h1>Kanda — Final High CPM Test</h1>
 
+    <!-- JW Player main video -->
+    <div id="jwPlayerDiv"></div>
+
+    <!-- Video.js main wrapper (sticky/pause) -->
     <div class="player-wrap" id="mainPlayerWrap">
       <video id="mainVideo" class="video-js vjs-default-skin" controls playsinline preload="auto" data-setup='{}'>
         <source src="../../videoxx/video3.mp4" type="video/mp4" />
         Your browser does not support HTML5 video.
       </video>
-
-      <!-- Pause overlay slot (we will attach a small videojs instance here for pause ads) -->
+      <!-- Pause overlay -->
       <div id="pauseOverlay"><div id="pauseSlot"></div></div>
     </div>
   </div>
 
-  <!-- Sticky floating mini-player (bottom-right) -->
+  <!-- Sticky floating mini-player -->
   <div id="stickyContainer">
     <div id="stickyHeader">Sponsored</div>
     <div id="stickySlot" class="small-player"></div>
   </div>
 
-  <!-- Video.js + IMA plugin -->
+  <!-- Video.js + IMA -->
   <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-ads/6.8.0/videojs-contrib-ads.min.js"></script>
+  <script src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/videojs-ima@1.8.0/dist/videojs.ima.min.js"></script>
 
   <script>
   (function(){
-    // ---------- CONFIG: your 4 VAST tags ----------
+    // ---------- VAST Tags (High CPM, Rotation) ----------
     const VAST_CHAIN = [
-      "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name", // primary
-      "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
-      "https://s.magsrv.com/v1/vast.php?idzone=5757692",
-      "https://s.magsrv.com/v1/vast.php?idzone=5757698"
+      "https://s.magsrv.com/v1/vast.php?idzone=5755632&output=vast&pb=1&t=max&sub=rot1",
+      "https://s.magsrv.com/v1/vast.php?idzone=5757688&output=vast&pb=1&t=max&sub=rot2",
+      "https://s.magsrv.com/v1/vast.php?idzone=5757692&output=vast&pb=1&t=max&sub=rot3",
+      "https://s.magsrv.com/v1/vast.php?idzone=5757698&output=vast&pb=1&t=max&sub=rot4"
     ];
 
-    // priority rotation: pre starts at 0, mid at 1, post at 2, pause at 3, sticky at 0
-    const PRIORITY_START = { pre:0, mid:1, post:2, pause:3, sticky:0 };
+    const PRIORITY_START = { pre:0, mid:1, post:2, pause:3, sticky:3 };
 
     function rotatedList(roll) {
       const start = PRIORITY_START[roll] % VAST_CHAIN.length;
@@ -88,254 +84,106 @@
       return out;
     }
 
-    // ---------- Setup main player ----------
-    const player = videojs('mainVideo');
-    player.ima({ id: 'mainVideo', adLabel: 'Advertisement' });
+    // ---------- JW Player Setup (Main Video pre/mid/post) ----------
+    const jwPre = rotatedList('pre')[0];
+    const jwMid = rotatedList('mid')[0];
+    const jwPost = rotatedList('post')[0];
 
-    // helper: request ad chain for a roll type (tries backups in order)
-    function requestAdChain(roll) {
-      const tags = rotatedList(roll);
-      console.log(`[${roll}] priority tags:`, tags);
-      return new Promise((resolve) => {
-        let idx = 0;
-        let cleaned = false;
-
-        function cleanup() {
-          try { player.ima.off('adsready', onAdsReady); } catch(e){}
-          try { player.ima.off('adserror', onAdError); } catch(e){}
-          try { player.ima.off('adscompleted', onAdComplete); } catch(e){}
-        }
-
-        function onAdsReady() {
-          // start ads once ready
-          try { player.ima.startAds(); } catch(e) { /* ignore */ }
-        }
-        function onAdError() {
-          cleanup();
-          if (cleaned) return;
-          console.warn(`[${roll}] ad error for tag ${tags[idx]}`);
-          idx++;
-          if (idx >= tags.length) {
-            cleaned = true;
-            resolve(false);
-          } else {
-            // try next backup
-            tryRequest();
-          }
-        }
-        function onAdComplete() {
-          cleanup();
-          if (cleaned) return;
-          cleaned = true;
-          resolve(true);
-        }
-
-        function tryRequest() {
-          const tag = tags[idx];
-          console.log(`[${roll}] requesting ad (attempt ${idx+1}):`, tag);
-          try {
-            player.ima.setAdTag(tag);
-            player.ima.requestAds();
-            // attach listeners
-            player.ima.on('adsready', onAdsReady);
-            player.ima.on('adserror', onAdError);
-            player.ima.on('adscompleted', onAdComplete);
-            // adscancelled may be treated same as error; listen if needed
-          } catch(err) {
-            console.warn(`[${roll}] requestAds threw, trying next`, err);
-            idx++;
-            if (idx >= tags.length) { cleaned = true; resolve(false); }
-            else tryRequest();
-          }
-        }
-
-        tryRequest();
-      });
-    }
-
-    // ---------- PRE-ROLL: request on first user play ----------
-    let preRequested = false;
-    player.on('play', async function firstPlayHandler(){
-      if (preRequested) return;
-      preRequested = true;
-      // pause content before running pre-roll
-      try { player.pause(); } catch(e){}
-      await requestAdChain('pre');
-      try { player.play(); } catch(e){}
-    });
-
-    // ---------- MID-ROLL: at 50% of video ----------
-    let midFired = false;
-    player.on('timeupdate', async function(){
-      if (midFired) return;
-      const d = player.duration();
-      if (!d || d === Infinity || isNaN(d)) return;
-      const now = player.currentTime();
-      if (now >= (d * 0.5) && (d - now) > 5) { // guard to avoid near-end
-        midFired = true;
-        try { player.pause(); } catch(e){}
-        await requestAdChain('mid');
-        try { player.play(); } catch(e){}
-        // after mid-roll completes and user resumes, show sticky (user chose sticky after ads finished)
-        showStickyAfterResume();
+    jwplayer("jwPlayerDiv").setup({
+      file: "../../videoxx/video3.mp4",
+      width: "100%",
+      aspectratio: "16:9",
+      advertising: {
+        client: "vast",
+        schedule: [
+          { offset: "pre", tag: jwPre },
+          { offset: "50%", tag: jwMid },
+          { offset: "post", tag: jwPost }
+        ]
       }
     });
 
-    // ---------- POST-ROLL: on ended ----------
-    player.on('ended', async function(){
-      await requestAdChain('post');
-    });
+    // ---------- Video.js Setup (Sticky + Pause) ----------
+    const player = videojs('mainVideo');
+    player.ima({ id: 'mainVideo', adLabel: 'Advertisement', debug:true });
 
-    // ---------- PAUSE-ROLL: when user manually pauses ----------
-    // We'll show a small overlay player (video.js instance) for pause ads to avoid conflicts with main IMA.
+    // Pause Overlay
     const pauseOverlay = document.getElementById('pauseOverlay');
     const pauseSlot = document.getElementById('pauseSlot');
-    let pauseInner = null; // videojs instance for pause ads
+    let pauseInner = null;
 
     player.on('pause', async function(){
-      // ignore if ended
       if (player.ended()) return;
-      // if an ad is currently playing by main, ignore
-      // Show overlay and play pause ad chain inside overlay player
       pauseOverlay.style.display = 'flex';
-      if (!pauseInner) {
-        // create inner video element
+      if (!pauseInner){
         const v = document.createElement('video');
         v.id = 'pauseInner';
         v.className = 'video-js vjs-default-skin';
         v.setAttribute('playsinline','');
-        v.setAttribute('preload','auto');
-        v.style.width = '100%';
-        v.style.height = '100%';
         pauseSlot.appendChild(v);
-        pauseInner = videojs(v, { controls: true, autoplay: false });
-        pauseInner.ima({ id: 'pauseInner', adLabel: 'Advertisement' });
+        pauseInner = videojs(v, { controls:true, autoplay:false });
+        pauseInner.ima({ id:'pauseInner', adLabel:'Advertisement' });
       }
-
-      // Try backup chain for pause
-      const ok = await (async ()=>{
-        const tags = rotatedList('pause');
-        for (let i=0;i<tags.length;i++){
-          const tag = tags[i];
-          console.log('[pause] trying', tag);
-          try {
-            pauseInner.ima.setAdTag(tag);
-            pauseInner.ima.requestAds();
-          } catch(err) {
-            console.warn('[pause] requestAds thrown', err);
-            continue;
-          }
-          const res = await new Promise((res2)=>{
-            const onReady = ()=>{ try{ pauseInner.ima.startAds(); }catch(e){} };
-            const onError = ()=>{ cleanup(); res2(false); };
-            const onComplete = ()=>{ cleanup(); res2(true); };
-            function cleanup(){
-              pauseInner.ima.off('adsready', onReady);
-              pauseInner.ima.off('adserror', onError);
-              pauseInner.ima.off('adscompleted', onComplete);
-            }
-            pauseInner.ima.on('adsready', onReady);
-            pauseInner.ima.on('adserror', onError);
-            pauseInner.ima.on('adscompleted', onComplete);
+      const tags = rotatedList('pause');
+      for (let tag of tags){
+        try {
+          pauseInner.ima.setAdTag(tag);
+          pauseInner.ima.requestAds();
+          await new Promise((res)=>{
+            pauseInner.ima.on('adsready', ()=>{ try{ pauseInner.ima.startAds(); }catch(e){}; res(true); });
+            pauseInner.ima.on('adserror', ()=>res(false));
+            pauseInner.ima.on('adscompleted', ()=>res(true));
           });
-          if (res) return true; // success
-        }
-        return false;
-      })();
-
-      // hide overlay after attempt (successful or not)
+          break;
+        } catch(e){ continue; }
+      }
       pauseOverlay.style.display = 'none';
-      try { pauseInner.pause(); } catch(e){}
     });
 
-    // if user plays main video again, hide overlay and stop pause inner
     player.on('play', function(){
       pauseOverlay.style.display = 'none';
-      if (pauseInner) try { pauseInner.pause(); } catch(e){}
+      if (pauseInner) try{ pauseInner.pause(); }catch(e){}
     });
 
-    // ---------- STICKY floating: appear AFTER ads finish and content resumes ----------
-    let stickyCreated = false;
+    // Sticky Floating
     const stickyContainer = document.getElementById('stickyContainer');
     const stickySlot = document.getElementById('stickySlot');
     let stickyInner = null;
 
     async function showStickyAfterResume() {
-      // Wait a little to ensure content resumed and user is watching
-      setTimeout(async ()=>{
-        // show sticky
-        stickyContainer.style.display = 'block';
-        if (!stickyInner) {
-          // create sticky inner video element
-          const v = document.createElement('video');
-          v.id = 'stickyInner';
-          v.className = 'video-js vjs-default-skin';
-          v.setAttribute('playsinline','');
-          v.setAttribute('preload','auto');
-          stickySlot.appendChild(v);
-          stickyInner = videojs(v, { controls:false, autoplay:false, muted:true });
-          stickyInner.ima({ id: 'stickyInner', adLabel: 'Sponsored' });
-        }
-        // run sticky chain (tries backups until one plays)
-        const tags = rotatedList('sticky');
-        for (let i=0;i<tags.length;i++){
-          const tag = tags[i];
-          console.log('[sticky] trying', tag);
-          try {
-            stickyInner.ima.setAdTag(tag);
-            stickyInner.ima.requestAds();
-          } catch(err) {
-            console.warn('[sticky] requestAds error', err);
-            continue;
-          }
-          const ok = await new Promise((res)=>{
-            const onReady = ()=>{ try{ stickyInner.ima.startAds(); }catch(e){} };
-            const onError = ()=>{ cleanup(); res(false); };
-            const onComplete = ()=>{ cleanup(); res(true); };
-            function cleanup(){
-              stickyInner.ima.off('adsready', onReady);
-              stickyInner.ima.off('adserror', onError);
-              stickyInner.ima.off('adscompleted', onComplete);
-            }
-            stickyInner.ima.on('adsready', onReady);
-            stickyInner.ima.on('adserror', onError);
-            stickyInner.ima.on('adscompleted', onComplete);
+      stickyContainer.style.display = 'block';
+      if (!stickyInner){
+        const v = document.createElement('video');
+        v.id = 'stickyInner';
+        v.className = 'video-js vjs-default-skin';
+        v.setAttribute('playsinline','');
+        stickySlot.appendChild(v);
+        stickyInner = videojs(v, { controls:false, autoplay:false, muted:true });
+        stickyInner.ima({ id:'stickyInner', adLabel:'Sponsored' });
+      }
+      const tags = rotatedList('sticky');
+      for (let tag of tags){
+        try {
+          stickyInner.ima.setAdTag(tag);
+          stickyInner.ima.requestAds();
+          await new Promise((res)=>{
+            stickyInner.ima.on('adsready', ()=>{ try{ stickyInner.ima.startAds(); }catch(e){}; res(true); });
+            stickyInner.ima.on('adserror', ()=>res(false));
+            stickyInner.ima.on('adscompleted', ()=>res(true));
           });
-          if (ok) break;
-        }
-      }, 800); // small delay to avoid immediate conflict with mid/post logic
-    }
-
-    // hide sticky when user brings main player back into view (optional)
-    function checkStickyHideOnView() {
-      const rect = document.getElementById('mainPlayerWrap').getBoundingClientRect();
-      if (rect.top >= 0 && rect.bottom <= window.innerHeight) {
-        // main fully visible -> hide sticky
-        if (stickyContainer.style.display !== 'none') {
-          stickyContainer.style.display = 'none';
-          if (stickyInner) { try { stickyInner.pause(); stickyInner.ima.destroy(); stickyInner.dispose(); } catch(e){} }
-          stickyInner = null;
-          stickySlot.innerHTML = '';
-        }
+          break;
+        } catch(e){ continue; }
       }
     }
-    window.addEventListener('scroll', throttle(checkStickyHideOnView, 300));
 
-    // ---------- Utility: throttle ----------
-    function throttle(fn, wait) {
-      let last = 0;
-      return function(...args){
-        const now = Date.now();
-        if (now - last >= wait) {
-          last = now;
-          fn.apply(this, args);
-        }
-      };
-    }
+    player.on('timeupdate', function(){
+      const d = player.duration();
+      if (!d || d===Infinity || isNaN(d)) return;
+      const now = player.currentTime();
+      if (now >= (d*0.5) && (d-now)>5) showStickyAfterResume();
+    });
 
-    // Debug
-    console.log('Final Video.js+IMA setup ready. VAST chain:', VAST_CHAIN);
-
+    console.log('High CPM JW + Video.js setup ready. VAST rotation:', VAST_CHAIN);
   })();
   </script>
 </body>
