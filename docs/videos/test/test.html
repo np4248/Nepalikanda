@@ -3,17 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kanda — JW Player Full Ads</title>
+<title>Kanda — JW Player Local + Ads Test</title>
 
-<!-- JW Player Free -->
+<!-- JW Player -->
 <script src="https://cdn.jwplayer.com/libraries/YOUR-LIBRARY-KEY.js"></script>
 
 <style>
 body { margin:0; background:#121212; color:#eee; font-family:Arial,Helvetica,sans-serif; }
 .page { max-width:900px; margin:20px auto; padding:12px; }
 h1 { color:#ff6666; text-align:center; margin-bottom:12px; }
+
 #stickyContainer { position:fixed; right:12px; bottom:12px; width:320px; height:180px; background:#000; z-index:20000; box-shadow:0 10px 30px rgba(0,0,0,0.6); border-radius:8px; overflow:hidden; display:none; }
 #stickyHeader { height:28px; background:rgba(0,0,0,0.5); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; }
+
 #pauseOverlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.8); z-index:30000; }
 #pauseSlot { width:80%; height:60%; background:#000; border-radius:8px; overflow:hidden; }
 </style>
@@ -21,7 +23,7 @@ h1 { color:#ff6666; text-align:center; margin-bottom:12px; }
 <body>
 
 <div class="page">
-  <h1>Kanda — JW Player Full Ads</h1>
+  <h1>Kanda — Local Video + Ads Test</h1>
   <div id="mainPlayer"></div>
 </div>
 
@@ -33,7 +35,8 @@ h1 { color:#ff6666; text-align:center; margin-bottom:12px; }
 <div id="pauseOverlay"><div id="pauseSlot"></div></div>
 
 <script>
-const videoUrl = "https://content.jwplatform.com/videos/HkauGhRi-640.mp4"; // Test CORS video
+const localVideo = "../../videoxx/video3.mp4"; // your local video
+const testVideo = "https://content.jwplatform.com/videos/HkauGhRi-640.mp4"; // public HTTPS video for ad testing
 
 const VAST_CHAIN = [
   "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
@@ -64,9 +67,9 @@ async function playVAST(playerInstance, roll){
   }
 }
 
-// Main player
+// ---------------- Main Player ----------------
 const mainPlayer = jwplayer("mainPlayer").setup({
-  file: videoUrl,
+  file: localVideo, // first try local file
   width: "100%",
   aspectratio: "16:9",
   autostart: false
@@ -78,7 +81,10 @@ mainPlayer.on('play', async ()=>{
   if(!preDone){
     preDone=true;
     mainPlayer.pause();
+    // switch to test video for ads to avoid CORS issues
+    mainPlayer.load([{ file: testVideo }]);
     await playVAST(mainPlayer,'pre');
+    mainPlayer.load([{ file: localVideo }]); // back to local video
     mainPlayer.play();
   }
 });
@@ -89,7 +95,9 @@ mainPlayer.on('time', async (e)=>{
   if(!midDone && e.position>=mainPlayer.getDuration()/2){
     midDone=true;
     mainPlayer.pause();
+    mainPlayer.load([{ file: testVideo }]);
     await playVAST(mainPlayer,'mid');
+    mainPlayer.load([{ file: localVideo }]);
     mainPlayer.play();
     showSticky();
   }
@@ -97,10 +105,11 @@ mainPlayer.on('time', async (e)=>{
 
 // Post-roll
 mainPlayer.on('complete', async ()=>{
+  mainPlayer.load([{ file: testVideo }]);
   await playVAST(mainPlayer,'post');
 });
 
-// Pause overlay
+// ---------------- Pause Overlay ----------------
 const pauseOverlay = document.getElementById('pauseOverlay');
 const pauseSlot = document.getElementById('pauseSlot');
 let pausePlayer=null;
@@ -110,7 +119,7 @@ mainPlayer.on('pause', async ()=>{
   pauseOverlay.style.display="flex";
   if(!pausePlayer){
     const div = document.createElement('div'); div.id="pauseInner"; pauseSlot.appendChild(div);
-    pausePlayer = jwplayer("pauseInner").setup({ file: videoUrl, width:"100%", height:"100%", autostart:true, mute:false });
+    pausePlayer = jwplayer("pauseInner").setup({ file: testVideo, width:"100%", height:"100%", autostart:true, mute:false });
   }
   await playVAST(pausePlayer,'pause');
   pauseOverlay.style.display="none";
@@ -118,16 +127,17 @@ mainPlayer.on('pause', async ()=>{
 
 mainPlayer.on('play', ()=>{ pauseOverlay.style.display="none"; if(pausePlayer) pausePlayer.pause(); });
 
-// Sticky mini-player
+// ---------------- Sticky Mini-Player ----------------
 const stickyContainer = document.getElementById('stickyContainer');
 let stickyPlayer=null;
 async function showSticky(){
   stickyContainer.style.display="block";
   if(!stickyPlayer){
-    stickyPlayer = jwplayer("stickyPlayer").setup({ file: videoUrl, width:"100%", height:"100%", autostart:true, mute:true });
+    stickyPlayer = jwplayer("stickyPlayer").setup({ file: testVideo, width:"100%", height:"100%", autostart:true, mute:true });
   }
   await playVAST(stickyPlayer,'sticky');
 }
 </script>
+
 </body>
 </html>
