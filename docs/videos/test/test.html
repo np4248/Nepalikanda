@@ -1,176 +1,100 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Kanda — High CPM Video.js + IMA</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kanda — JW Player High CPM</title>
 
-  <!-- Video.js CSS -->
-  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+<!-- JW Player CDN -->
+<script src="https://cdn.jwplayer.com/libraries/your-library-key.js"></script>
 
-  <style>
-    body { margin:0; background:#121212; color:#eee; font-family:Arial,Helvetica,sans-serif; }
-    .page { max-width:900px; margin:20px auto; padding:12px; }
-    h1 { color:#ff6666; text-align:center; margin-bottom:8px; }
+<style>
+  body { margin:0; background:#121212; color:#eee; font-family:Arial,Helvetica,sans-serif; }
+  .page { max-width:900px; margin:20px auto; padding:12px; }
+  h1 { color:#ff6666; text-align:center; margin-bottom:12px; }
 
-    .player-wrap { position:relative; width:100%; max-width:100%; margin:0 auto; }
-    .player-wrap::after { content:""; display:block; padding-top:56.25%; } /* 16:9 */
-    .video-js { position:absolute !important; top:0; left:0; width:100% !important; height:100% !important; }
-
-    #pauseOverlay { position:absolute; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.75); z-index:1200; }
-    #pauseSlot { width:86%; height:66%; background:#000; border-radius:8px; overflow:hidden; }
-
-    #stickyContainer {
-      position:fixed; right:12px; bottom:12px; width:320px; height:180px;
-      background:#000; z-index:20000; box-shadow:0 10px 30px rgba(0,0,0,0.6);
-      border-radius:8px; overflow:hidden; display:none;
-    }
-    #stickyHeader { height:28px; background:rgba(0,0,0,0.5); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; }
-    .small-player .video-js { position:absolute !important; top:28px !important; height: calc(100% - 28px) !important; width:100% !important; left:0 !important; }
-  </style>
+  /* Sticky mini-player */
+  #stickyContainer {
+    position:fixed; right:12px; bottom:12px; width:320px; height:180px;
+    background:#000; z-index:20000; box-shadow:0 10px 30px rgba(0,0,0,0.6);
+    border-radius:8px; overflow:hidden; display:none;
+  }
+  #stickyHeader { height:28px; background:rgba(0,0,0,0.5); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; }
+</style>
 </head>
 <body>
-  <div class="page">
-    <h1>Kanda — High CPM Test</h1>
+<div class="page">
+  <h1>Kanda — High CPM JW Player</h1>
 
-    <!-- Main Video.js Player -->
-    <div class="player-wrap" id="mainPlayerWrap">
-      <video id="mainVideo" class="video-js vjs-default-skin" controls playsinline preload="auto" data-setup='{}'>
-        <source src="https://np4248.github.io/videoxx/video3.mp4" type="video/mp4" />
-        Your browser does not support HTML5 video.
-      </video>
-      <div id="pauseOverlay"><div id="pauseSlot"></div></div>
-    </div>
-  </div>
+  <!-- Main JW Player container -->
+  <div id="mainPlayer">Loading player...</div>
+</div>
 
-  <!-- Sticky Mini-Player -->
-  <div id="stickyContainer">
-    <div id="stickyHeader">Sponsored</div>
-    <div id="stickySlot" class="small-player"></div>
-  </div>
+<!-- Sticky Mini-Player -->
+<div id="stickyContainer">
+  <div id="stickyHeader">Sponsored</div>
+  <div id="stickyPlayer"></div>
+</div>
 
-  <!-- Video.js + IMA -->
-  <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/videojs-ima@1.8.0/dist/videojs.ima.min.js"></script>
+<script>
+const videoUrl = "https://np4248.github.io/videoxx/video3.mp4";
 
-  <script>
-  (function(){
-    // ---------------- VAST CONFIG ----------------
-    const VAST_CHAIN = [
-      "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
-      "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
-      "https://s.magsrv.com/v1/vast.php?idzone=5757692&ex_av=name",
-      "https://s.magsrv.com/v1/vast.php?idzone=5757698&ex_av=name"
-    ];
+// ExoClick / Adsterra VAST tags
+const VAST_CHAIN = [
+  "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
+  "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
+  "https://s.magsrv.com/v1/vast.php?idzone=5757692&ex_av=name",
+  "https://s.magsrv.com/v1/vast.php?idzone=5757698&ex_av=name"
+];
 
-    const PRIORITY_START = { pre:0, mid:1, post:2, pause:3, sticky:0 };
+// Priority for pre, mid, post, pause, sticky
+const PRIORITY_START = { pre:0, mid:1, post:2, pause:3, sticky:0 };
 
-    function rotatedList(roll){
-      const start = PRIORITY_START[roll]%VAST_CHAIN.length;
-      const out=[];
-      for(let i=0;i<VAST_CHAIN.length;i++) out.push(VAST_CHAIN[(start+i)%VAST_CHAIN.length]);
-      return out;
-    }
+function rotatedList(roll){
+  const start = PRIORITY_START[roll]%VAST_CHAIN.length;
+  const out=[];
+  for(let i=0;i<VAST_CHAIN.length;i++) out.push(VAST_CHAIN[(start+i)%VAST_CHAIN.length]);
+  return out;
+}
 
-    // ---------------- Video.js Main Player ----------------
-    const player = videojs('mainVideo');
-    player.ima({ id:'mainVideo', adLabel:'Advertisement', debug:true });
+// ---------------- Main JW Player ----------------
+const playerInstance = jwplayer("mainPlayer").setup({
+  file: videoUrl,
+  width: "100%",
+  aspectratio: "16:9",
+  autostart: false,
+  advertising: {
+    client: "vast",
+    schedule: [
+      { offset: "pre", tag: rotatedList('pre')[0] },
+      { offset: "50%", tag: rotatedList('mid')[0] },
+      { offset: "post", tag: rotatedList('post')[0] }
+    ]
+  }
+});
 
-    async function requestAdChain(vjsInstance, roll){
-      const tags = rotatedList(roll);
-      for(let tag of tags){
-        try{
-          vjsInstance.ima.setAdTag(tag);
-          vjsInstance.ima.requestAds();
-          await new Promise(res=>{
-            vjsInstance.ima.on('adsready', ()=>{ try{ vjsInstance.ima.startAds(); }catch(e){}; res(true); });
-            vjsInstance.ima.on('adserror', ()=>res(false));
-            vjsInstance.ima.on('adscompleted', ()=>res(true));
-          });
-          break;
-        }catch(e){ continue; }
-      }
-    }
+// ---------------- Pause Overlay Ad ----------------
+playerInstance.on('pause', function(){
+  // Optional: could trigger a secondary JW Player for pause ads in overlay
+  console.log("Video paused - pause ad can trigger here");
+});
 
-    // ---------------- Pre-roll ----------------
-    let preRequested=false;
-    player.on('play', async function firstPlayHandler(){
-      if(preRequested) return;
-      preRequested=true;
-      try{ player.pause(); }catch(e){}
-      await requestAdChain(player,'pre');
-      try{ player.play(); }catch(e){}
+// ---------------- Sticky Mini-Player ----------------
+let stickyShown = false;
+playerInstance.on('time', function(e){
+  if(!stickyShown && e.position >= playerInstance.getDuration()*0.5){
+    stickyShown=true;
+    document.getElementById("stickyContainer").style.display="block";
+    jwplayer("stickyPlayer").setup({
+      file: videoUrl,
+      width: "100%",
+      height: "100%",
+      autostart: true,
+      mute: true,
+      advertising: { client: "vast", tag: rotatedList('sticky')[0] }
     });
-
-    // ---------------- Mid-roll (50% of video) ----------------
-    let midFired=false;
-    player.on('timeupdate', async function(){
-      const d=player.duration();
-      if(!d||d===Infinity||isNaN(d)) return;
-      const now=player.currentTime();
-      if(now>=(d*0.5)&&(d-now)>5 && !midFired){
-        midFired=true;
-        try{ player.pause(); }catch(e){}
-        await requestAdChain(player,'mid');
-        try{ player.play(); }catch(e){}
-        showStickyAfterResume();
-      }
-    });
-
-    // ---------------- Post-roll ----------------
-    player.on('ended', async function(){
-      await requestAdChain(player,'post');
-    });
-
-    // ---------------- Pause Overlay ----------------
-    const pauseOverlay = document.getElementById('pauseOverlay');
-    const pauseSlot = document.getElementById('pauseSlot');
-    let pauseInner=null;
-
-    player.on('pause', async function(){
-      if(player.ended()) return;
-      pauseOverlay.style.display='flex';
-      if(!pauseInner){
-        const v=document.createElement('video');
-        v.id='pauseInner';
-        v.className='video-js vjs-default-skin';
-        v.setAttribute('playsinline','');
-        v.setAttribute('preload','auto');
-        pauseSlot.appendChild(v);
-        pauseInner=videojs(v,{controls:true,autoplay:false});
-        pauseInner.ima({id:'pauseInner',adLabel:'Advertisement'});
-      }
-      await requestAdChain(pauseInner,'pause');
-      pauseOverlay.style.display='none';
-    });
-
-    player.on('play', function(){
-      pauseOverlay.style.display='none';
-      if(pauseInner) try{ pauseInner.pause(); }catch(e){}
-    });
-
-    // ---------------- Sticky Mini-Player ----------------
-    const stickyContainer = document.getElementById('stickyContainer');
-    const stickySlot = document.getElementById('stickySlot');
-    let stickyInner=null;
-
-    async function showStickyAfterResume(){
-      stickyContainer.style.display='block';
-      if(!stickyInner){
-        const v=document.createElement('video');
-        v.id='stickyInner';
-        v.className='video-js vjs-default-skin';
-        v.setAttribute('playsinline','');
-        v.setAttribute('preload','auto');
-        stickySlot.appendChild(v);
-        stickyInner=videojs(v,{controls:false,autoplay:false,muted:true});
-        stickyInner.ima({id:'stickyInner',adLabel:'Sponsored'});
-      }
-      await requestAdChain(stickyInner,'sticky');
-    }
-
-    console.log('✅ High CPM Video.js + IMA setup ready.');
-  })();
-  </script>
+  }
+});
+</script>
 </body>
 </html>
