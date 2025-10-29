@@ -5,28 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kanda — JW Player High CPM</title>
 
-<!-- JW Player CDN -->
+<!-- JW Player Free -->
 <script src="https://cdn.jwplayer.com/libraries/your-library-key.js"></script>
 
 <style>
-  body { margin:0; background:#121212; color:#eee; font-family:Arial,Helvetica,sans-serif; }
-  .page { max-width:900px; margin:20px auto; padding:12px; }
-  h1 { color:#ff6666; text-align:center; margin-bottom:12px; }
+body { margin:0; background:#121212; color:#eee; font-family:Arial,Helvetica,sans-serif; }
+.page { max-width:900px; margin:20px auto; padding:12px; }
+h1 { color:#ff6666; text-align:center; margin-bottom:12px; }
 
-  /* Sticky mini-player */
-  #stickyContainer {
-    position:fixed; right:12px; bottom:12px; width:320px; height:180px;
-    background:#000; z-index:20000; box-shadow:0 10px 30px rgba(0,0,0,0.6);
-    border-radius:8px; overflow:hidden; display:none;
-  }
-  #stickyHeader { height:28px; background:rgba(0,0,0,0.5); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; }
+/* Sticky mini-player */
+#stickyContainer {
+  position:fixed; right:12px; bottom:12px; width:320px; height:180px;
+  background:#000; z-index:20000; box-shadow:0 10px 30px rgba(0,0,0,0.6);
+  border-radius:8px; overflow:hidden; display:none;
+}
+#stickyHeader { height:28px; background:rgba(0,0,0,0.5); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; }
+
+/* Pause overlay */
+#pauseOverlay {
+  position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+  background:rgba(0,0,0,0.8); z-index:30000;
+}
+#pauseSlot { width:80%; height:60%; background:#000; border-radius:8px; overflow:hidden; }
 </style>
 </head>
 <body>
+
 <div class="page">
   <h1>Kanda — High CPM JW Player</h1>
-
-  <!-- Main JW Player container -->
   <div id="mainPlayer">Loading player...</div>
 </div>
 
@@ -36,10 +42,13 @@
   <div id="stickyPlayer"></div>
 </div>
 
+<!-- Pause Overlay -->
+<div id="pauseOverlay"><div id="pauseSlot"></div></div>
+
 <script>
 const videoUrl = "https://np4248.github.io/videoxx/video3.mp4";
 
-// ExoClick / Adsterra VAST tags
+// VAST URLs
 const VAST_CHAIN = [
   "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
   "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
@@ -57,44 +66,101 @@ function rotatedList(roll){
   return out;
 }
 
+// Utility: play VAST with backup rotation
+async function playVAST(playerInstance, roll){
+  const tags = rotatedList(roll);
+  for(let tag of tags){
+    try{
+      await new Promise(res=>{
+        playerInstance.setConfig({ advertising: { client:"vast", tag: tag } });
+        playerInstance.playAd().then(()=>res(true)).catch(()=>res(false));
+      });
+      break; // stop after first successful
+    }catch(e){ continue; }
+  }
+}
+
 // ---------------- Main JW Player ----------------
-const playerInstance = jwplayer("mainPlayer").setup({
+const mainPlayer = jwplayer("mainPlayer").setup({
   file: videoUrl,
   width: "100%",
   aspectratio: "16:9",
-  autostart: false,
-  advertising: {
-    client: "vast",
-    schedule: [
-      { offset: "pre", tag: rotatedList('pre')[0] },
-      { offset: "50%", tag: rotatedList('mid')[0] },
-      { offset: "post", tag: rotatedList('post')[0] }
-    ]
+  autostart: false
+});
+
+// Pre-roll
+let preDone=false;
+mainPlayer.on('play', async ()=>{
+  if(!preDone){
+    preDone=true;
+    mainPlayer.pause();
+    await playVAST(mainPlayer,'pre');
+    mainPlayer.play();
   }
 });
 
-// ---------------- Pause Overlay Ad ----------------
-playerInstance.on('pause', function(){
-  // Optional: could trigger a secondary JW Player for pause ads in overlay
-  console.log("Video paused - pause ad can trigger here");
+// Mid-roll (50%)
+let midDone=false;
+mainPlayer.on('time', async (e)=>{
+  if(!midDone && e.position>=mainPlayer.getDuration()/2){
+    midDone=true;
+    mainPlayer.pause();
+    await playVAST(mainPlayer,'mid');
+    mainPlayer.play();
+    showSticky();
+  }
 });
 
-// ---------------- Sticky Mini-Player ----------------
-let stickyShown = false;
-playerInstance.on('time', function(e){
-  if(!stickyShown && e.position >= playerInstance.getDuration()*0.5){
-    stickyShown=true;
-    document.getElementById("stickyContainer").style.display="block";
-    jwplayer("stickyPlayer").setup({
+// Post-roll
+mainPlayer.on('complete', async ()=>{
+  await playVAST(mainPlayer,'post');
+});
+
+// ---------------- Pause Overlay ----------------
+const pauseOverlay = document.getElementById('pauseOverlay');
+const pauseSlot = document.getElementById('pauseSlot');
+let pausePlayer=null;
+
+mainPlayer.on('pause', async ()=>{
+  if(mainPlayer.getState()==="COMPLETE") return;
+  pauseOverlay.style.display="flex";
+  if(!pausePlayer){
+    const v = document.createElement('div');
+    v.id = "pauseInner";
+    pauseSlot.appendChild(v);
+    pausePlayer = jwplayer("pauseInner").setup({
       file: videoUrl,
       width: "100%",
       height: "100%",
       autostart: true,
-      mute: true,
-      advertising: { client: "vast", tag: rotatedList('sticky')[0] }
+      mute: false
     });
   }
+  await playVAST(pausePlayer,'pause');
+  pauseOverlay.style.display="none";
 });
+
+// Hide pause overlay when resumed
+mainPlayer.on('play', ()=>{ pauseOverlay.style.display="none"; if(pausePlayer) pausePlayer.pause(); });
+
+// ---------------- Sticky Mini-Player ----------------
+const stickyContainer = document.getElementById('stickyContainer');
+let stickyPlayer=null;
+
+async function showSticky(){
+  stickyContainer.style.display="block";
+  if(!stickyPlayer){
+    stickyPlayer = jwplayer("stickyPlayer").setup({
+      file: videoUrl,
+      width: "100%",
+      height: "100%",
+      autostart: true,
+      mute: true
+    });
+  }
+  await playVAST(stickyPlayer,'sticky');
+}
 </script>
+
 </body>
 </html>
