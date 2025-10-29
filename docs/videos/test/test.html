@@ -1,12 +1,9 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Kanda — High CPM JW + Video.js + IMA</title>
-
-  <!-- JW Player -->
-  <script src="https://cdn.jwplayer.com/libraries/your-library.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Kanda — Video.js + IMA High CPM</title>
 
   <!-- Video.js CSS -->
   <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
@@ -16,16 +13,13 @@
     .page { max-width:900px; margin:20px auto; padding:12px; }
     h1 { color:#ff6666; text-align:center; margin-bottom:8px; }
 
-    /* Video.js wrapper */
     .player-wrap { position:relative; width:100%; max-width:100%; margin:0 auto; }
     .player-wrap::after { content:""; display:block; padding-top:56.25%; } /* 16:9 */
     .video-js { position:absolute !important; top:0; left:0; width:100% !important; height:100% !important; }
 
-    /* pause overlay */
     #pauseOverlay { position:absolute; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.75); z-index:1200; }
     #pauseSlot { width:86%; height:66%; background:#000; border-radius:8px; overflow:hidden; }
 
-    /* sticky floating mini-player bottom-right */
     #stickyContainer {
       position:fixed; right:12px; bottom:12px; width:320px; height:180px;
       background:#000; z-index:20000; box-shadow:0 10px 30px rgba(0,0,0,0.6);
@@ -37,23 +31,19 @@
 </head>
 <body>
   <div class="page">
-    <h1>Kanda — Final High CPM Test</h1>
+    <h1>Kanda — High CPM Test</h1>
 
-    <!-- JW Player main video -->
-    <div id="jwPlayerDiv"></div>
-
-    <!-- Video.js main wrapper (sticky/pause) -->
+    <!-- Main Video.js Player -->
     <div class="player-wrap" id="mainPlayerWrap">
       <video id="mainVideo" class="video-js vjs-default-skin" controls playsinline preload="auto" data-setup='{}'>
-        <source src="../../videoxx/video3.mp4" type="video/mp4" />
+        <source src="https://YOUR_GITHUB_USERNAME.github.io/videos/video3/video3.mp4" type="video/mp4" />
         Your browser does not support HTML5 video.
       </video>
-      <!-- Pause overlay -->
       <div id="pauseOverlay"><div id="pauseSlot"></div></div>
     </div>
   </div>
 
-  <!-- Sticky floating mini-player -->
+  <!-- Sticky Mini-Player -->
   <div id="stickyContainer">
     <div id="stickyHeader">Sponsored</div>
     <div id="stickySlot" class="small-player"></div>
@@ -67,7 +57,7 @@
 
   <script>
   (function(){
-    // ---------- VAST Tags (High CPM, Rotation) ----------
+    // ---------------- VAST CONFIG ----------------
     const VAST_CHAIN = [
       "https://s.magsrv.com/v1/vast.php?idzone=5755632&output=vast&pb=1&t=max&sub=rot1",
       "https://s.magsrv.com/v1/vast.php?idzone=5757688&output=vast&pb=1&t=max&sub=rot2",
@@ -77,113 +67,99 @@
 
     const PRIORITY_START = { pre:0, mid:1, post:2, pause:3, sticky:3 };
 
-    function rotatedList(roll) {
-      const start = PRIORITY_START[roll] % VAST_CHAIN.length;
-      const out = [];
-      for (let i=0;i<VAST_CHAIN.length;i++) out.push(VAST_CHAIN[(start + i) % VAST_CHAIN.length]);
+    function rotatedList(roll){
+      const start = PRIORITY_START[roll]%VAST_CHAIN.length;
+      const out=[];
+      for(let i=0;i<VAST_CHAIN.length;i++) out.push(VAST_CHAIN[(start+i)%VAST_CHAIN.length]);
       return out;
     }
 
-    // ---------- JW Player Setup (Main Video pre/mid/post) ----------
-    const jwPre = rotatedList('pre')[0];
-    const jwMid = rotatedList('mid')[0];
-    const jwPost = rotatedList('post')[0];
-
-    jwplayer("jwPlayerDiv").setup({
-      file: "../../videoxx/video3.mp4",
-      width: "100%",
-      aspectratio: "16:9",
-      advertising: {
-        client: "vast",
-        schedule: [
-          { offset: "pre", tag: jwPre },
-          { offset: "50%", tag: jwMid },
-          { offset: "post", tag: jwPost }
-        ]
-      }
-    });
-
-    // ---------- Video.js Setup (Sticky + Pause) ----------
+    // ---------------- Video.js Player ----------------
     const player = videojs('mainVideo');
-    player.ima({ id: 'mainVideo', adLabel: 'Advertisement', debug:true });
+    player.ima({ id:'mainVideo', adLabel:'Advertisement', debug:true });
 
-    // Pause Overlay
+    // ---------------- Pause Overlay ----------------
     const pauseOverlay = document.getElementById('pauseOverlay');
     const pauseSlot = document.getElementById('pauseSlot');
     let pauseInner = null;
 
     player.on('pause', async function(){
-      if (player.ended()) return;
-      pauseOverlay.style.display = 'flex';
-      if (!pauseInner){
-        const v = document.createElement('video');
-        v.id = 'pauseInner';
-        v.className = 'video-js vjs-default-skin';
+      if(player.ended()) return;
+      pauseOverlay.style.display='flex';
+      if(!pauseInner){
+        const v=document.createElement('video');
+        v.id='pauseInner';
+        v.className='video-js vjs-default-skin';
         v.setAttribute('playsinline','');
         pauseSlot.appendChild(v);
-        pauseInner = videojs(v, { controls:true, autoplay:false });
-        pauseInner.ima({ id:'pauseInner', adLabel:'Advertisement' });
+        pauseInner=videojs(v,{controls:true,autoplay:false});
+        pauseInner.ima({id:'pauseInner',adLabel:'Advertisement'});
       }
       const tags = rotatedList('pause');
-      for (let tag of tags){
-        try {
+      for(let tag of tags){
+        try{
           pauseInner.ima.setAdTag(tag);
           pauseInner.ima.requestAds();
-          await new Promise((res)=>{
+          await new Promise(res=>{
             pauseInner.ima.on('adsready', ()=>{ try{ pauseInner.ima.startAds(); }catch(e){}; res(true); });
             pauseInner.ima.on('adserror', ()=>res(false));
             pauseInner.ima.on('adscompleted', ()=>res(true));
           });
           break;
-        } catch(e){ continue; }
+        }catch(e){ continue; }
       }
-      pauseOverlay.style.display = 'none';
+      pauseOverlay.style.display='none';
     });
 
     player.on('play', function(){
-      pauseOverlay.style.display = 'none';
-      if (pauseInner) try{ pauseInner.pause(); }catch(e){}
+      pauseOverlay.style.display='none';
+      if(pauseInner) try{ pauseInner.pause(); }catch(e){}
     });
 
-    // Sticky Floating
+    // ---------------- Sticky Mini-Player ----------------
     const stickyContainer = document.getElementById('stickyContainer');
     const stickySlot = document.getElementById('stickySlot');
-    let stickyInner = null;
+    let stickyInner=null;
 
-    async function showStickyAfterResume() {
-      stickyContainer.style.display = 'block';
-      if (!stickyInner){
-        const v = document.createElement('video');
-        v.id = 'stickyInner';
-        v.className = 'video-js vjs-default-skin';
+    async function showStickyAfterResume(){
+      stickyContainer.style.display='block';
+      if(!stickyInner){
+        const v=document.createElement('video');
+        v.id='stickyInner';
+        v.className='video-js vjs-default-skin';
         v.setAttribute('playsinline','');
         stickySlot.appendChild(v);
-        stickyInner = videojs(v, { controls:false, autoplay:false, muted:true });
-        stickyInner.ima({ id:'stickyInner', adLabel:'Sponsored' });
+        stickyInner=videojs(v,{controls:false,autoplay:false,muted:true});
+        stickyInner.ima({id:'stickyInner',adLabel:'Sponsored'});
       }
       const tags = rotatedList('sticky');
-      for (let tag of tags){
-        try {
+      for(let tag of tags){
+        try{
           stickyInner.ima.setAdTag(tag);
           stickyInner.ima.requestAds();
-          await new Promise((res)=>{
+          await new Promise(res=>{
             stickyInner.ima.on('adsready', ()=>{ try{ stickyInner.ima.startAds(); }catch(e){}; res(true); });
             stickyInner.ima.on('adserror', ()=>res(false));
             stickyInner.ima.on('adscompleted', ()=>res(true));
           });
           break;
-        } catch(e){ continue; }
+        }catch(e){ continue; }
       }
     }
 
+    // Show sticky after mid-roll or 50% video
+    let midFired=false;
     player.on('timeupdate', function(){
-      const d = player.duration();
-      if (!d || d===Infinity || isNaN(d)) return;
-      const now = player.currentTime();
-      if (now >= (d*0.5) && (d-now)>5) showStickyAfterResume();
+      const d=player.duration();
+      if(!d||d===Infinity||isNaN(d)) return;
+      const now=player.currentTime();
+      if(now>=(d*0.5)&&(d-now)>5 && !midFired){
+        midFired=true;
+        showStickyAfterResume();
+      }
     });
 
-    console.log('High CPM JW + Video.js setup ready. VAST rotation:', VAST_CHAIN);
+    console.log('✅ High CPM Video.js + IMA setup ready. VAST chain:', VAST_CHAIN);
   })();
   </script>
 </body>
