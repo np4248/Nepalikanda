@@ -8,8 +8,6 @@
   body { margin:0; background:#121212; color:#fff; font-family:Arial,sans-serif; }
   #video-container { max-width:900px; margin:50px auto; position:relative; }
   #sticky-ad { position:fixed; bottom:20px; right:20px; width:320px; height:180px; z-index:9999; border-radius:8px; overflow:hidden; display:none; }
-  #pause-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:10000; }
-  #pause-player { width:80%; height:60%; background:#000; border-radius:8px; overflow:hidden; }
 </style>
 <script src="https://cdn.jwplayer.com/libraries/IDzF9Zmk.js"></script>
 </head>
@@ -20,10 +18,6 @@
 </div>
 
 <div id="sticky-ad"></div>
-
-<div id="pause-overlay">
-  <div id="pause-player"></div>
-</div>
 
 <script>
 const vastAds = [
@@ -55,28 +49,41 @@ const player = jwplayer("my-video").setup({
   }
 });
 
-// ---------------- Pause Ads ----------------
-const pauseOverlay = document.getElementById('pause-overlay');
-const pausePlayerDiv = document.getElementById('pause-player');
-let pausePlayer = null;
+// ---------------- Pause Ads Inside Main Video ----------------
+let pausedTime = 0;
+let pauseAdPlaying = false;
 
-player.on('pause', async ()=>{
-  if(player.getState()==="COMPLETE") return;
+player.on('pause', ()=>{
+  if(player.getState()==="COMPLETE" || pauseAdPlaying) return;
 
-  pauseOverlay.style.display="flex";
-  if(!pausePlayer){
-    pausePlayer = jwplayer(pausePlayerDiv).setup({
-      file:"../../videoxx/video3.mp4",
-      width:"100%",
-      height:"100%",
-      autostart:true,
+  pausedTime = player.getPosition();
+  pauseAdPlaying = true;
+
+  // Temporarily load pause ad in main player
+  player.load([
+    {
+      file:"../../videoxx/video3.mp4", // fallback local file if VAST fails
       advertising:{ client:"vast", tag:vastAds[3], backupTag:rotateTags(0) }
-    });
-    pausePlayer.on('complete', ()=>{ pauseOverlay.style.display="none"; });
-  } else { pausePlayer.play(); }
+    }
+  ]);
+
+  player.once('ready', ()=>{
+    player.play();
+  });
 });
 
-player.on('play', ()=>{ pauseOverlay.style.display="none"; if(pausePlayer) pausePlayer.pause(); });
+// After ad completes, resume main content
+player.on('adComplete', ()=>{
+  if(!pauseAdPlaying) return;
+
+  // reload main video and resume from pausedTime
+  player.load([{ file:"../../videoxx/video3.mp4" }]);
+  player.once('ready', ()=>{
+    player.seek(pausedTime);
+    player.play();
+    pauseAdPlaying=false;
+  });
+});
 
 // ---------------- Sticky Ads ----------------
 const stickyDiv = document.getElementById('sticky-ad');
@@ -85,7 +92,7 @@ function showSticky(){
   stickyDiv.style.display="block";
   if(!stickyPlayer){
     stickyPlayer = jwplayer(stickyDiv).setup({
-      file:"../../videoxx/video3.mp4",
+      file:"../../videoxx/video3.mp4", // fallback local file
       width:"100%",
       height:"100%",
       autostart:true,
