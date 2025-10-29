@@ -3,20 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kanda Video + Full Ads</title>
+<title>Overlay Ads Test</title>
+<link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet">
 <style>
   body { margin:0; background:#121212; color:#fff; font-family:Arial,sans-serif; }
-  #video-container { max-width:900px; margin:50px auto; position:relative; }
-  #sticky-ad { position:fixed; bottom:20px; right:20px; width:320px; height:180px; z-index:9999; border-radius:8px; overflow:hidden; display:none; }
+  #pause-overlay {
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.8);
+    justify-content:center;
+    align-items:center;
+    z-index:10000;
+  }
+  #pause-player {
+    width:80%;
+    height:60%;
+    background:#000;
+    border-radius:8px;
+    overflow:hidden;
+  }
+  #sticky-ad {
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    width:320px;
+    height:180px;
+    z-index:9999;
+    display:none;
+    border-radius:8px;
+    overflow:hidden;
+    background:#000;
+  }
 </style>
-<script src="https://cdn.jwplayer.com/libraries/IDzF9Zmk.js"></script>
+<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/videojs-ima@1.8.0/dist/videojs.ima.min.js"></script>
 </head>
 <body>
 
-<div id="video-container">
-  <div id="my-video"></div>
+<!-- Pause Ad Overlay -->
+<div id="pause-overlay">
+  <div id="pause-player"></div>
 </div>
 
+<!-- Sticky/Floating Ad -->
 <div id="sticky-ad"></div>
 
 <script>
@@ -27,89 +57,86 @@ const vastAds = [
   "https://s.magsrv.com/v1/vast.php?idzone=5757698&ex_av=name"
 ];
 
-function rotateTags(startIndex) {
-  const out=[];
-  for(let i=0;i<vastAds.length;i++) out.push(vastAds[(startIndex+i)%vastAds.length]);
-  return out;
+// ---------------- Pause Ads ----------------
+const pauseOverlay = document.getElementById('pause-overlay');
+const pauseSlot = document.getElementById('pause-player');
+let pausePlayer = null;
+
+// Assuming 'player' is your JW Player main instance
+function setupPauseAds(mainPlayer){
+  mainPlayer.on('pause', async ()=>{
+    if(mainPlayer.getState()==="COMPLETE") return;
+
+    pauseOverlay.style.display = 'flex';
+    if(!pausePlayer){
+      const videoEl = document.createElement('video');
+      pauseSlot.appendChild(videoEl);
+      pausePlayer = videojs(videoEl, { controls:true, autoplay:true, preload:'auto' });
+      pausePlayer.ima({ id: videoEl.id, adLabel: 'Advertisement' });
+
+      // Try all 4 VASTs in rotation
+      let played=false;
+      for(let tag of vastAds){
+        try{
+          pausePlayer.ima.setAdTag(tag);
+          pausePlayer.ima.requestAds();
+          pausePlayer.ima.on('adsready', ()=>{ pausePlayer.ima.startAds(); });
+          pausePlayer.ima.on('adscompleted', ()=>{ pauseOverlay.style.display='none'; });
+          played=true;
+          break;
+        } catch(e){ continue; }
+      }
+      if(!played) pauseOverlay.style.display='none';
+    } else {
+      pausePlayer.play();
+    }
+  });
+
+  mainPlayer.on('play', ()=>{ pauseOverlay.style.display='none'; if(pausePlayer) pausePlayer.pause(); });
 }
 
-// ---------------- Main Player ----------------
-const player = jwplayer("my-video").setup({
-  file: "../../videoxx/video3.mp4",
-  width: "100%",
-  aspectratio: "16:9",
-  autostart: false,
-  advertising:{
-    client:"vast",
-    schedule:[
-      { offset:"pre", tag:vastAds[0], backupTag:rotateTags(1) },
-      { offset:"2:00", tag:vastAds[1], backupTag:rotateTags(2) },
-      { offset:"post", tag:vastAds[2], backupTag:rotateTags(3) }
-    ]
-  }
-});
-
-// ---------------- Pause Ads Inside Main Video ----------------
-let pausedTime = 0;
-let pauseAdPlaying = false;
-
-player.on('pause', ()=>{
-  if(player.getState()==="COMPLETE" || pauseAdPlaying) return;
-
-  pausedTime = player.getPosition();
-  pauseAdPlaying = true;
-
-  // Temporarily load pause ad in main player
-  player.load([
-    {
-      file:"../../videoxx/video3.mp4", // fallback local file if VAST fails
-      advertising:{ client:"vast", tag:vastAds[3], backupTag:rotateTags(0) }
-    }
-  ]);
-
-  player.once('ready', ()=>{
-    player.play();
-  });
-});
-
-// After ad completes, resume main content
-player.on('adComplete', ()=>{
-  if(!pauseAdPlaying) return;
-
-  // reload main video and resume from pausedTime
-  player.load([{ file:"../../videoxx/video3.mp4" }]);
-  player.once('ready', ()=>{
-    player.seek(pausedTime);
-    player.play();
-    pauseAdPlaying=false;
-  });
-});
-
-// ---------------- Sticky Ads ----------------
+// ---------------- Sticky/Floating Ads ----------------
 const stickyDiv = document.getElementById('sticky-ad');
 let stickyPlayer = null;
+
 function showSticky(){
-  stickyDiv.style.display="block";
+  stickyDiv.style.display = 'block';
   if(!stickyPlayer){
-    stickyPlayer = jwplayer(stickyDiv).setup({
-      file:"../../videoxx/video3.mp4", // fallback local file
-      width:"100%",
-      height:"100%",
-      autostart:true,
-      mute:true,
-      advertising:{ client:"vast", tag:vastAds[0], backupTag:rotateTags(1) }
-    });
+    const videoEl = document.createElement('video');
+    stickyDiv.appendChild(videoEl);
+    stickyPlayer = videojs(videoEl, { controls:false, autoplay:true, muted:true, preload:'auto' });
+    stickyPlayer.ima({ id: videoEl.id, adLabel: 'Sponsored' });
+
+    // Rotate all 4 VASTs
+    for(let tag of vastAds){
+      try{
+        stickyPlayer.ima.setAdTag(tag);
+        stickyPlayer.ima.requestAds();
+        stickyPlayer.ima.on('adsready', ()=>{ stickyPlayer.ima.startAds(); });
+        stickyPlayer.ima.on('adscompleted', ()=>{ stickyPlayer.pause(); });
+        break;
+      } catch(e){ continue; }
+    }
   } else { stickyPlayer.play(); }
 }
 
-// Show sticky after mid-roll (50% of video)
-let midShown=false;
-player.on('time', function(e){
-  if(!midShown && e.position >= player.getDuration()/2){
-    midShown=true;
-    showSticky();
-  }
-});
+// ---------------- Seek-roll Ads ----------------
+let lastTime = 0;
+function setupSeekAds(mainPlayer){
+  mainPlayer.on('time', function(e){
+    const diff = Math.abs(e.position - lastTime);
+    if(diff>5){ // user seeked >5s
+      lastTime = e.position;
+      showSeekAd();
+    }
+  });
+}
+
+function showSeekAd(){
+  // Reuse pause overlay for simplicity
+  pauseOverlay.style.display='flex';
+  if(pausePlayer) pausePlayer.play();
+}
 </script>
 
 </body>
