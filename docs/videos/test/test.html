@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Overlay Ads Test</title>
+<title>Overlay Ads Fixed</title>
 <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet">
 <style>
   body { margin:0; background:#121212; color:#fff; font-family:Arial,sans-serif; }
@@ -11,7 +11,7 @@
     display:none;
     position:fixed;
     inset:0;
-    background:rgba(0,0,0,0.8);
+    background:rgba(0,0,0,0.85);
     justify-content:center;
     align-items:center;
     z-index:10000;
@@ -57,85 +57,93 @@ const vastAds = [
   "https://s.magsrv.com/v1/vast.php?idzone=5757698&ex_av=name"
 ];
 
-// ---------------- Pause Ads ----------------
-const pauseOverlay = document.getElementById('pause-overlay');
-const pauseSlot = document.getElementById('pause-player');
-let pausePlayer = null;
+// ---------------- Overlay Ads Setup ----------------
+function setupOverlayAds(mainPlayer){
+  // ---------------- Pause Ads ----------------
+  const pauseOverlay = document.getElementById('pause-overlay');
+  const pauseSlot = document.getElementById('pause-player');
+  let pausePlayer = null;
 
-// Assuming 'player' is your JW Player main instance
-function setupPauseAds(mainPlayer){
-  mainPlayer.on('pause', async ()=>{
-    if(mainPlayer.getState()==="COMPLETE") return;
+  mainPlayer.on('pause', function(){
+    if(mainPlayer.getState && mainPlayer.getState() === "COMPLETE") return;
 
     pauseOverlay.style.display = 'flex';
     if(!pausePlayer){
       const videoEl = document.createElement('video');
+      videoEl.id = 'pauseInnerVideo';
+      videoEl.className = 'video-js vjs-default-skin';
+      videoEl.setAttribute('playsinline','');
+      videoEl.style.width='100%';
+      videoEl.style.height='100%';
       pauseSlot.appendChild(videoEl);
+
       pausePlayer = videojs(videoEl, { controls:true, autoplay:true, preload:'auto' });
       pausePlayer.ima({ id: videoEl.id, adLabel: 'Advertisement' });
 
-      // Try all 4 VASTs in rotation
-      let played=false;
-      for(let tag of vastAds){
-        try{
-          pausePlayer.ima.setAdTag(tag);
-          pausePlayer.ima.requestAds();
-          pausePlayer.ima.on('adsready', ()=>{ pausePlayer.ima.startAds(); });
-          pausePlayer.ima.on('adscompleted', ()=>{ pauseOverlay.style.display='none'; });
-          played=true;
-          break;
-        } catch(e){ continue; }
-      }
-      if(!played) pauseOverlay.style.display='none';
-    } else {
-      pausePlayer.play();
-    }
+      // Rotate VAST tags
+      (async ()=>{
+        for(let tag of vastAds){
+          try{
+            pausePlayer.ima.setAdTag(tag);
+            pausePlayer.ima.requestAds();
+            pausePlayer.ima.on('adsready', ()=>{ pausePlayer.ima.startAds(); });
+            pausePlayer.ima.on('adscompleted', ()=>{ pauseOverlay.style.display='none'; });
+            break;
+          } catch(e){ continue; }
+        }
+      })();
+    } else { pausePlayer.play(); }
   });
 
   mainPlayer.on('play', ()=>{ pauseOverlay.style.display='none'; if(pausePlayer) pausePlayer.pause(); });
-}
 
-// ---------------- Sticky/Floating Ads ----------------
-const stickyDiv = document.getElementById('sticky-ad');
-let stickyPlayer = null;
+  // ---------------- Sticky/Floating Ads ----------------
+  const stickyDiv = document.getElementById('sticky-ad');
+  let stickyPlayer = null;
 
-function showSticky(){
-  stickyDiv.style.display = 'block';
-  if(!stickyPlayer){
-    const videoEl = document.createElement('video');
-    stickyDiv.appendChild(videoEl);
-    stickyPlayer = videojs(videoEl, { controls:false, autoplay:true, muted:true, preload:'auto' });
-    stickyPlayer.ima({ id: videoEl.id, adLabel: 'Sponsored' });
-
-    // Rotate all 4 VASTs
-    for(let tag of vastAds){
-      try{
-        stickyPlayer.ima.setAdTag(tag);
-        stickyPlayer.ima.requestAds();
-        stickyPlayer.ima.on('adsready', ()=>{ stickyPlayer.ima.startAds(); });
-        stickyPlayer.ima.on('adscompleted', ()=>{ stickyPlayer.pause(); });
-        break;
-      } catch(e){ continue; }
-    }
-  } else { stickyPlayer.play(); }
-}
-
-// ---------------- Seek-roll Ads ----------------
-let lastTime = 0;
-function setupSeekAds(mainPlayer){
   mainPlayer.on('time', function(e){
-    const diff = Math.abs(e.position - lastTime);
-    if(diff>5){ // user seeked >5s
-      lastTime = e.position;
-      showSeekAd();
+    const currentTime = mainPlayer.getPosition ? mainPlayer.getPosition() : e.position || 0;
+    const duration = mainPlayer.getDuration ? mainPlayer.getDuration() : 120; // fallback
+    if(currentTime >= duration*0.5 && stickyDiv.style.display==='none'){ // after mid-roll
+      stickyDiv.style.display='block';
+      if(!stickyPlayer){
+        const videoEl = document.createElement('video');
+        videoEl.id = 'stickyInnerVideo';
+        videoEl.className = 'video-js vjs-default-skin';
+        videoEl.setAttribute('playsinline','');
+        videoEl.setAttribute('muted','true');
+        videoEl.style.width='100%';
+        videoEl.style.height='100%';
+        stickyDiv.appendChild(videoEl);
+
+        stickyPlayer = videojs(videoEl, { controls:false, autoplay:true, muted:true, preload:'auto' });
+        stickyPlayer.ima({ id: videoEl.id, adLabel: 'Sponsored' });
+
+        (async ()=>{
+          for(let tag of vastAds){
+            try{
+              stickyPlayer.ima.setAdTag(tag);
+              stickyPlayer.ima.requestAds();
+              stickyPlayer.ima.on('adsready', ()=>{ stickyPlayer.ima.startAds(); });
+              stickyPlayer.ima.on('adscompleted', ()=>{ stickyPlayer.pause(); });
+              break;
+            } catch(e){ continue; }
+          }
+        })();
+      } else { stickyPlayer.play(); }
     }
   });
-}
 
-function showSeekAd(){
-  // Reuse pause overlay for simplicity
-  pauseOverlay.style.display='flex';
-  if(pausePlayer) pausePlayer.play();
+  // ---------------- Seek-roll Ads ----------------
+  let lastTime = 0;
+  mainPlayer.on('time', function(e){
+    const currentTime = mainPlayer.getPosition ? mainPlayer.getPosition() : e.position || 0;
+    if(Math.abs(currentTime-lastTime)>5){ // user seeked >5s
+      lastTime = currentTime;
+      pauseOverlay.style.display='flex';
+      if(pausePlayer) pausePlayer.play();
+    }
+  });
 }
 </script>
 
