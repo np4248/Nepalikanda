@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Kanda — Video.js + IMA High CPM</title>
+  <title>Kanda — High CPM Video.js + IMA</title>
 
   <!-- Video.js CSS -->
   <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
@@ -36,7 +36,7 @@
     <!-- Main Video.js Player -->
     <div class="player-wrap" id="mainPlayerWrap">
       <video id="mainVideo" class="video-js vjs-default-skin" controls playsinline preload="auto" data-setup='{}'>
-        <source src="https://YOUR_GITHUB_USERNAME.github.io/videos/video3/video3.mp4" type="video/mp4" />
+        <source src="https://np4248.github.io/videoxx/video3.mp4" type="video/mp4" />
         Your browser does not support HTML5 video.
       </video>
       <div id="pauseOverlay"><div id="pauseSlot"></div></div>
@@ -51,21 +51,19 @@
 
   <!-- Video.js + IMA -->
   <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-ads/6.8.0/videojs-contrib-ads.min.js"></script>
-  <script src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/videojs-ima@1.8.0/dist/videojs.ima.min.js"></script>
 
   <script>
   (function(){
     // ---------------- VAST CONFIG ----------------
     const VAST_CHAIN = [
-      "https://s.magsrv.com/v1/vast.php?idzone=5755632&output=vast&pb=1&t=max&sub=rot1",
-      "https://s.magsrv.com/v1/vast.php?idzone=5757688&output=vast&pb=1&t=max&sub=rot2",
-      "https://s.magsrv.com/v1/vast.php?idzone=5757692&output=vast&pb=1&t=max&sub=rot3",
-      "https://s.magsrv.com/v1/vast.php?idzone=5757698&output=vast&pb=1&t=max&sub=rot4"
+      "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
+      "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
+      "https://s.magsrv.com/v1/vast.php?idzone=5757692&ex_av=name",
+      "https://s.magsrv.com/v1/vast.php?idzone=5757698&ex_av=name"
     ];
 
-    const PRIORITY_START = { pre:0, mid:1, post:2, pause:3, sticky:3 };
+    const PRIORITY_START = { pre:0, mid:1, post:2, pause:3, sticky:0 };
 
     function rotatedList(roll){
       const start = PRIORITY_START[roll]%VAST_CHAIN.length;
@@ -74,14 +72,60 @@
       return out;
     }
 
-    // ---------------- Video.js Player ----------------
+    // ---------------- Video.js Main Player ----------------
     const player = videojs('mainVideo');
     player.ima({ id:'mainVideo', adLabel:'Advertisement', debug:true });
+
+    async function requestAdChain(vjsInstance, roll){
+      const tags = rotatedList(roll);
+      for(let tag of tags){
+        try{
+          vjsInstance.ima.setAdTag(tag);
+          vjsInstance.ima.requestAds();
+          await new Promise(res=>{
+            vjsInstance.ima.on('adsready', ()=>{ try{ vjsInstance.ima.startAds(); }catch(e){}; res(true); });
+            vjsInstance.ima.on('adserror', ()=>res(false));
+            vjsInstance.ima.on('adscompleted', ()=>res(true));
+          });
+          break;
+        }catch(e){ continue; }
+      }
+    }
+
+    // ---------------- Pre-roll ----------------
+    let preRequested=false;
+    player.on('play', async function firstPlayHandler(){
+      if(preRequested) return;
+      preRequested=true;
+      try{ player.pause(); }catch(e){}
+      await requestAdChain(player,'pre');
+      try{ player.play(); }catch(e){}
+    });
+
+    // ---------------- Mid-roll (50% of video) ----------------
+    let midFired=false;
+    player.on('timeupdate', async function(){
+      const d=player.duration();
+      if(!d||d===Infinity||isNaN(d)) return;
+      const now=player.currentTime();
+      if(now>=(d*0.5)&&(d-now)>5 && !midFired){
+        midFired=true;
+        try{ player.pause(); }catch(e){}
+        await requestAdChain(player,'mid');
+        try{ player.play(); }catch(e){}
+        showStickyAfterResume();
+      }
+    });
+
+    // ---------------- Post-roll ----------------
+    player.on('ended', async function(){
+      await requestAdChain(player,'post');
+    });
 
     // ---------------- Pause Overlay ----------------
     const pauseOverlay = document.getElementById('pauseOverlay');
     const pauseSlot = document.getElementById('pauseSlot');
-    let pauseInner = null;
+    let pauseInner=null;
 
     player.on('pause', async function(){
       if(player.ended()) return;
@@ -91,23 +135,12 @@
         v.id='pauseInner';
         v.className='video-js vjs-default-skin';
         v.setAttribute('playsinline','');
+        v.setAttribute('preload','auto');
         pauseSlot.appendChild(v);
         pauseInner=videojs(v,{controls:true,autoplay:false});
         pauseInner.ima({id:'pauseInner',adLabel:'Advertisement'});
       }
-      const tags = rotatedList('pause');
-      for(let tag of tags){
-        try{
-          pauseInner.ima.setAdTag(tag);
-          pauseInner.ima.requestAds();
-          await new Promise(res=>{
-            pauseInner.ima.on('adsready', ()=>{ try{ pauseInner.ima.startAds(); }catch(e){}; res(true); });
-            pauseInner.ima.on('adserror', ()=>res(false));
-            pauseInner.ima.on('adscompleted', ()=>res(true));
-          });
-          break;
-        }catch(e){ continue; }
-      }
+      await requestAdChain(pauseInner,'pause');
       pauseOverlay.style.display='none';
     });
 
@@ -128,38 +161,15 @@
         v.id='stickyInner';
         v.className='video-js vjs-default-skin';
         v.setAttribute('playsinline','');
+        v.setAttribute('preload','auto');
         stickySlot.appendChild(v);
         stickyInner=videojs(v,{controls:false,autoplay:false,muted:true});
         stickyInner.ima({id:'stickyInner',adLabel:'Sponsored'});
       }
-      const tags = rotatedList('sticky');
-      for(let tag of tags){
-        try{
-          stickyInner.ima.setAdTag(tag);
-          stickyInner.ima.requestAds();
-          await new Promise(res=>{
-            stickyInner.ima.on('adsready', ()=>{ try{ stickyInner.ima.startAds(); }catch(e){}; res(true); });
-            stickyInner.ima.on('adserror', ()=>res(false));
-            stickyInner.ima.on('adscompleted', ()=>res(true));
-          });
-          break;
-        }catch(e){ continue; }
-      }
+      await requestAdChain(stickyInner,'sticky');
     }
 
-    // Show sticky after mid-roll or 50% video
-    let midFired=false;
-    player.on('timeupdate', function(){
-      const d=player.duration();
-      if(!d||d===Infinity||isNaN(d)) return;
-      const now=player.currentTime();
-      if(now>=(d*0.5)&&(d-now)>5 && !midFired){
-        midFired=true;
-        showStickyAfterResume();
-      }
-    });
-
-    console.log('✅ High CPM Video.js + IMA setup ready. VAST chain:', VAST_CHAIN);
+    console.log('✅ High CPM Video.js + IMA setup ready.');
   })();
   </script>
 </body>
