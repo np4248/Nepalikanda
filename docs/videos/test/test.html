@@ -1,302 +1,172 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Kanda — Video.js main + pause/sticky/seek-roll ads</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kanda Video + Pause/Seek/Sticky Ads</title>
 
-  <!-- Video.js CSS -->
+  <!-- JW Player -->
+  <script src="https://cdn.jwplayer.com/libraries/IDzF9Zmk.js"></script>
+
+  <!-- Video.js -->
   <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+  <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/videojs-ima@1.8.0/dist/videojs.ima.min.js"></script>
 
   <style>
-    :root{--max-width:900px}
-    body{margin:0;background:#121212;color:#eee;font-family:Arial,Helvetica,sans-serif}
-    .page{max-width:var(--max-width);margin:20px auto;padding:12px}
-    h1{color:#ff6666;text-align:center;margin-bottom:8px}
-    .player-wrap{position:relative;width:100%;max-width:100%;margin:0 auto}
-    .player-wrap::after{content:"";display:block;padding-top:56.25%} /* 16:9 */
-    .video-js{position:absolute !important;top:0;left:0;width:100% !important;height:100% !important}
-    /* pause overlay */
-    #pauseOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);z-index:12000}
-    #pauseSlot{width:80%;height:60%;background:#000;border-radius:8px;overflow:hidden}
-    /* sticky */
-    #stickyContainer{position:fixed;right:12px;bottom:12px;width:320px;height:180px;background:#000;z-index:20000;box-shadow:0 10px 30px rgba(0,0,0,0.6);border-radius:8px;overflow:hidden;display:none}
-    #stickyHeader{height:28px;background:rgba(0,0,0,0.5);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px}
-    #stickySlot{width:100%;height:calc(100% - 28px);background:#000}
-    /* small helper */
-    .vjs-hidden { display:none !important; }
+    body { margin:0; background:#121212; color:#fff; font-family: Arial, sans-serif; }
+    #video-container { max-width:900px; margin:30px auto; position:relative; }
+    #pauseOverlay {
+      position:absolute; inset:0; display:none; align-items:center; justify-content:center;
+      background: rgba(0,0,0,0.75); z-index:1200;
+    }
+    #pauseSlot { width:80%; height:60%; background:#000; border-radius:8px; overflow:hidden; }
+    #stickyContainer {
+      position:fixed; bottom:12px; right:12px; width:320px; height:180px; background:#000;
+      z-index:2000; box-shadow:0 10px 30px rgba(0,0,0,0.6); border-radius:8px; overflow:hidden; display:none;
+    }
+    #stickyHeader { height:28px; background:rgba(0,0,0,0.5); color:#fff; display:flex; align-items:center;
+      justify-content:center; font-size:13px; }
+    .small-player .video-js { position:absolute !important; top:28px !important; height: calc(100% - 28px) !important; width:100% !important; left:0 !important; }
   </style>
 </head>
 <body>
-  <div class="page">
-    <h1>Kanda — Video.js main + overlay ads</h1>
 
-    <div class="player-wrap" id="mainPlayerWrap">
-      <!-- main player element (must exist before scripts run) -->
-      <video id="mainVideo" class="video-js vjs-default-skin" controls playsinline preload="auto" data-setup='{}'>
-        <source src="https://np4248.github.io/videoxx/video3.mp4" type="video/mp4" />
-        Your browser does not support HTML5 video.
-      </video>
-    </div>
-  </div>
+<div id="video-container">
+  <div id="my-jw-video"></div>
 
-  <!-- pause overlay (video.js instance will be created inside) -->
   <div id="pauseOverlay"><div id="pauseSlot"></div></div>
+</div>
 
-  <!-- sticky floating container -->
-  <div id="stickyContainer">
-    <div id="stickyHeader">Sponsored</div>
-    <div id="stickySlot"></div>
-  </div>
+<div id="stickyContainer">
+  <div id="stickyHeader">Sponsored</div>
+  <div id="stickySlot" class="small-player"></div>
+</div>
 
-  <!-- Video.js + contrib-ads + IMA SDK + videojs-ima (correct order) -->
-  <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-ads/6.8.0/videojs-contrib-ads.min.js"></script>
-  <script src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/videojs-ima@1.8.0/dist/videojs.ima.min.js"></script>
+<script>
+  // === VAST ads for rotation ===
+  const vastAds = [
+    "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
+    "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
+    "https://s.magsrv.com/v1/vast.php?idzone=5757692",
+    "https://s.magsrv.com/v1/vast.php?idzone=5757698"
+  ];
 
-  <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    (async function(){
-      try {
-        // ---------- CONFIG ----------
-        const VAST_CHAIN = [
-          "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
-          "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
-          "https://s.magsrv.com/v1/vast.php?idzone=5757692&ex_av=name",
-          "https://s.magsrv.com/v1/vast.php?idzone=5757698&ex_av=name"
-        ];
-        const PRIORITY_START = { pre:0, mid:1, post:2, pause:3, sticky:3, seek:3 };
+  function rotateVast(index) {
+    return [...vastAds.slice(index), ...vastAds.slice(0,index)];
+  }
 
-        function rotatedList(roll){
-          const start = PRIORITY_START[roll] % VAST_CHAIN.length;
-          const out=[];
-          for(let i=0;i<VAST_CHAIN.length;i++) out.push(VAST_CHAIN[(start+i)%VAST_CHAIN.length]);
-          return out;
-        }
-
-        // Safe helper: request ads with fallback rotation on a given video.js instance
-        async function requestAdChain(vjsInstance, roll) {
-          const tags = rotatedList(roll);
-          console.log(`[${roll}] attempting tags:`, tags);
-          for (let tag of tags) {
-            try {
-              // clear previous listeners if any
-              try { vjsInstance.ima.off('adsready'); vjsInstance.ima.off('adserror'); vjsInstance.ima.off('adscompleted'); } catch(e){}
-              vjsInstance.ima.setAdTag(tag);
-              vjsInstance.ima.requestAds();
-              // wait outcome
-              const ok = await new Promise((resolve) => {
-                let settled = false;
-                function cleanup(){
-                  try { vjsInstance.ima.off('adsready', onReady); } catch(e){}
-                  try { vjsInstance.ima.off('adserror', onError); } catch(e){}
-                  try { vjsInstance.ima.off('adscompleted', onComplete); } catch(e){}
-                }
-                function onReady(){ try{ vjsInstance.ima.startAds(); }catch(e){} }
-                function onError(){ if (settled) return; settled = true; cleanup(); resolve(false); }
-                function onComplete(){ if (settled) return; settled = true; cleanup(); resolve(true); }
-                try {
-                  vjsInstance.ima.on('adsready', onReady);
-                  vjsInstance.ima.on('adserror', onError);
-                  vjsInstance.ima.on('adscompleted', onComplete);
-                } catch(err) {
-                  cleanup();
-                  resolve(false);
-                }
-                // safety timeout
-                setTimeout(()=>{ if (settled) return; settled = true; cleanup(); resolve(false); }, 12000);
-              });
-              if (ok) { console.log(`[${roll}] success with tag:`, tag); return true; }
-              else { console.warn(`[${roll}] failed tag:`, tag); continue; }
-            } catch(err) {
-              console.warn(`[${roll}] tag error for ${tag}:`, err);
-              continue;
-            }
-          }
-          console.warn(`[${roll}] none of the tags served`); 
-          return false;
-        }
-
-        // ---------- INIT MAIN VIDEO.JS PLAYER ----------
-        const player = videojs('mainVideo', { autoplay: false });
-        player.ima({ id: 'mainVideo', adLabel: 'Advertisement', debug: true });
-
-        // Make sure user click starts everything correctly:
-        // Listen for the first real 'play' event (user-initiated) to run pre-roll
-        let prePlayed = false;
-        player.on('play', async function onFirstPlay(){
-          if (prePlayed) return;
-          // ensure this was user-initiated (some browsers fire programmatic play)
-          // We'll treat first play as user gesture.
-          prePlayed = true;
-          player.off('play', onFirstPlay);
-          // pause content and request pre-roll ad on same instance (user gesture allows ad)
-          try { player.pause(); } catch(e){}
-          await requestAdChain(player, 'pre');
-          try { player.play(); } catch(e){}
-        });
-
-        // Mid-roll: at 50%
-        let midFired = false;
-        player.on('timeupdate', async function(){
-          if (midFired) return;
-          const dur = player.duration();
-          if (!dur || dur === Infinity || isNaN(dur)) return;
-          const current = player.currentTime();
-          if (current >= (dur * 0.5) && (dur - current) > 5) {
-            midFired = true;
-            try { player.pause(); } catch(e){}
-            await requestAdChain(player, 'mid');
-            try { player.play(); } catch(e){}
-            // after mid-roll show sticky
-            showSticky();
-          }
-        });
-
-        // Post-roll on ended
-        player.on('ended', async function(){
-          await requestAdChain(player, 'post');
-        });
-
-        // ---------- PAUSE OVERLAY ----------
-        const pauseOverlay = document.getElementById('pauseOverlay');
-        const pauseSlot = document.getElementById('pauseSlot');
-        let pauseInner = null;
-        let pauseInnerId = 'pauseInnerVideo';
-
-        player.on('pause', async function(){
-          // don't trigger if ended or if main ads currently active
-          try {
-            if (player.ended()) return;
-            const adActive = player.ima && typeof player.ima.getAdsActive === 'function' ? player.ima.getAdsActive() : false;
-            if (adActive) return;
-          } catch(e){ /* ignore */ }
-
-          // show overlay
-          pauseOverlay.style.display = 'flex';
-
-          // create inner video element (only once)
-          if (!pauseInner) {
-            // create element with unique id
-            const vid = document.createElement('video');
-            vid.id = pauseInnerId;
-            vid.className = 'video-js vjs-default-skin';
-            vid.setAttribute('playsinline','');
-            vid.setAttribute('preload','auto');
-            vid.style.width = '100%';
-            vid.style.height = '100%';
-            pauseSlot.appendChild(vid);
-
-            pauseInner = videojs(vid.id, { controls: true, autoplay: false, preload: 'auto' });
-            pauseInner.ima({ id: vid.id, adLabel: 'Advertisement', debug: true });
-          }
-
-          // Play rotated pause ad on pauseInner
-          const played = await requestAdChain(pauseInner, 'pause');
-          // hide overlay regardless (user can resume main player)
-          pauseOverlay.style.display = 'none';
-        });
-
-        // ensure overlay is hidden and inner pauses on resume
-        player.on('play', function(){
-          pauseOverlay.style.display = 'none';
-          if (pauseInner) try { pauseInner.pause(); } catch(e){}
-        });
-
-        // ---------- STICKY MINI-PLAYER (muted autoplay) ----------
-        const stickyContainer = document.getElementById('stickyContainer');
-        const stickySlot = document.getElementById('stickySlot');
-        let stickyInner = null;
-        let stickyShown = false;
-
-        async function showSticky(){
-          if (stickyShown) return;
-          stickyShown = true;
-          stickyContainer.style.display = 'block';
-
-          if (!stickyInner) {
-            const vid = document.createElement('video');
-            const id = 'stickyInnerVideo';
-            vid.id = id;
-            vid.className = 'video-js vjs-default-skin';
-            vid.setAttribute('playsinline','');
-            vid.setAttribute('muted','true');
-            vid.setAttribute('preload','auto');
-            vid.style.width = '100%';
-            vid.style.height = '100%';
-            stickySlot.appendChild(vid);
-
-            stickyInner = videojs(id, { controls: false, autoplay: true, muted: true, preload: 'auto' });
-            stickyInner.ima({ id: id, adLabel: 'Sponsored', debug: true });
-          } else {
-            try { stickyInner.play(); } catch(e){}
-          }
-
-          await requestAdChain(stickyInner, 'sticky');
-        }
-
-        // optional: hide sticky when main player fully in view
-        function checkStickyHideOnView() {
-          const rect = document.getElementById('mainPlayerWrap').getBoundingClientRect();
-          if (rect.top >= 0 && rect.bottom <= window.innerHeight) {
-            if (stickyContainer.style.display === 'block') {
-              stickyContainer.style.display = 'none';
-              if (stickyInner) { try { stickyInner.pause(); stickyInner.ima && stickyInner.ima.destroy && stickyInner.ima.destroy(); stickyInner.dispose(); } catch(e){} }
-              stickyInner = null;
-            }
-          }
-        }
-        window.addEventListener('scroll', throttle(checkStickyHideOnView, 300));
-
-        // ---------- SEEK-ROLL: trigger when user seeks > 5s ----------
-        let lastTime = 0;
-        player.on('timeupdate', function(){
-          const now = player.currentTime();
-          if (Math.abs(now - lastTime) > 5) {
-            // user did a seek
-            lastTime = now;
-            // show a seek ad using pause overlay (reuse pauseInner)
-            (async ()=>{
-              pauseOverlay.style.display = 'flex';
-              if (!pauseInner) {
-                // create pauseInner if missing (same code as above)
-                const vid = document.createElement('video');
-                vid.id = pauseInnerId;
-                vid.className = 'video-js vjs-default-skin';
-                vid.setAttribute('playsinline','');
-                vid.setAttribute('preload','auto');
-                vid.style.width = '100%';
-                vid.style.height = '100%';
-                pauseSlot.appendChild(vid);
-                pauseInner = videojs(vid.id, { controls: true, autoplay: false, preload: 'auto' });
-                pauseInner.ima({ id: vid.id, adLabel: 'Advertisement', debug: true });
-              }
-              await requestAdChain(pauseInner, 'seek');
-              pauseOverlay.style.display = 'none';
-            })();
-          }
-        });
-
-        // ---------- Utility: throttle ----------
-        function throttle(fn, wait) {
-          let last = 0;
-          return function(...args){
-            const now = Date.now();
-            if (now - last >= wait) {
-              last = now;
-              fn.apply(this, args);
-            }
-          };
-        }
-
-        console.log('✅ Video.js main + overlay ads initialized. VAST chain:', VAST_CHAIN);
-      } catch (err) {
-        // don't let errors kill the page
-        console.error('Initialization error (caught):', err);
-      }
-    })();
+  // === JW Player setup (pre/mid/post-roll) ===
+  const player = jwplayer("my-jw-video").setup({
+    file: "../../videoxx/video3.mp4",
+    width: "100%",
+    aspectratio: "16:9",
+    autostart: false,
+    advertising: {
+      client: "vast",
+      schedule: [
+        { offset:"pre", tag: vastAds[0], skipoffset:15, backupTag: rotateVast(1) },
+        { offset:"2:00", tag: vastAds[1], skipoffset:15, backupTag: rotateVast(2) },
+        { offset:"post", tag: vastAds[2], skipoffset:15, backupTag: rotateVast(3) }
+      ]
+    }
   });
-  </script>
+
+  // === Pause Overlay Ads ===
+  const pauseOverlay = document.getElementById('pauseOverlay');
+  const pauseSlot = document.getElementById('pauseSlot');
+  let pauseInner = null;
+
+  player.on('pause', function(){
+    if(player.getState() === 'complete') return;
+    pauseOverlay.style.display = 'flex';
+
+    if(!pauseInner){
+      const v = document.createElement('video');
+      v.id = 'pauseInner';
+      v.className = 'video-js vjs-default-skin';
+      v.setAttribute('playsinline','');
+      pauseSlot.appendChild(v);
+      pauseInner = videojs(v, {autoplay:true, controls:true});
+      pauseInner.ima({id:'pauseInner', adLabel:'Advertisement'});
+    }
+
+    // Try all VASTs
+    let idx=3; // pause ad default index
+    function playPauseAd(i){
+      if(i>=vastAds.length){ pauseOverlay.style.display='none'; return; }
+      pauseInner.ima.setAdTag(vastAds[i]);
+      pauseInner.ima.requestAds();
+      pauseInner.ima.on('adsready', ()=>{ pauseInner.ima.startAds(); });
+      pauseInner.ima.on('adscompleted', ()=>{ pauseOverlay.style.display='none'; });
+      pauseInner.ima.on('adserror', ()=>{ playPauseAd(i+1); });
+    }
+    playPauseAd(idx);
+  });
+
+  player.on('play', function(){ pauseOverlay.style.display='none'; if(pauseInner) pauseInner.pause(); });
+
+  // === Seek-roll ads ===
+  let lastTime = 0;
+  player.on('time', function(e){
+    const curr = e.position;
+    if(Math.abs(curr-lastTime)>5){ // seek detected >5 sec
+      lastTime = curr;
+      // Use Video.js overlay ad
+      if(!pauseInner) return;
+      pauseOverlay.style.display='flex';
+      pauseInner.ima.setAdTag(vastAds[1]);
+      pauseInner.ima.requestAds();
+      pauseInner.ima.on('adsready', ()=>{ pauseInner.ima.startAds(); });
+      pauseInner.ima.on('adscompleted', ()=>{ pauseOverlay.style.display='none'; });
+    }else{ lastTime = curr; }
+  });
+
+  // === Sticky Ads ===
+  const stickyContainer = document.getElementById('stickyContainer');
+  const stickySlot = document.getElementById('stickySlot');
+  let stickyInner = null;
+
+  function showSticky(){
+    stickyContainer.style.display='block';
+    if(!stickyInner){
+      const v = document.createElement('video');
+      v.id = 'stickyInner';
+      v.className = 'video-js vjs-default-skin';
+      v.setAttribute('playsinline','');
+      stickySlot.appendChild(v);
+      stickyInner = videojs(v, {autoplay:true, controls:false, muted:true});
+      stickyInner.ima({id:'stickyInner', adLabel:'Sponsored'});
+    }
+
+    let idx=0;
+    function playStickyAd(i){
+      if(i>=vastAds.length) return;
+      stickyInner.ima.setAdTag(vastAds[i]);
+      stickyInner.ima.requestAds();
+      stickyInner.ima.on('adsready', ()=>{ stickyInner.ima.startAds(); });
+      stickyInner.ima.on('adscompleted', ()=>{ /* can loop or hide sticky if needed */ });
+      stickyInner.ima.on('adserror', ()=>{ playStickyAd(i+1); });
+    }
+    playStickyAd(idx);
+  }
+
+  // Show sticky after mid-roll (JW Player triggers mid-roll events)
+  player.on('adComplete', function(e){
+    if(e.tag === vastAds[1]) showSticky();
+  });
+
+  // Optional: hide sticky when main video in view
+  function checkStickyHide(){
+    const rect = document.getElementById('video-container').getBoundingClientRect();
+    if(rect.top>=0 && rect.bottom<=window.innerHeight){
+      stickyContainer.style.display='none';
+      if(stickyInner){ try{ stickyInner.pause(); }catch(e){} }
+    }
+  }
+  window.addEventListener('scroll', ()=>{ checkStickyHide(); });
+
+</script>
+
 </body>
 </html>
