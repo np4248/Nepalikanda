@@ -9,6 +9,13 @@
   .video-container { position:relative; max-width:900px; width:100%; }
   #clickAdOverlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:10000; }
   #adSlot { width:80%; height:60%; background:#000; border-radius:8px; overflow:hidden; }
+
+  /* Hide JW Player native pause overlay */
+  .jw-display-icon-container, 
+  .jw-display-controls,
+  .jw-display-icon-overlay {
+    display: none !important;
+  }
 </style>
 
 <!-- JW Player CDN -->
@@ -29,8 +36,8 @@
 const vastAds = [
   "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
   "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757692&ex_av=name",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757698&ex_av=name"
+  "https://s.magsrv.com/v1/vast.php?idzone=5757692",
+  "https://s.magsrv.com/v1/vast.php?idzone=5757698"
 ];
 
 // --- JW Player setup for pre/mid/post-roll ---
@@ -39,6 +46,10 @@ const player = jwplayer("my-video").setup({
   width: "100%",
   aspectratio: "16:9",
   autostart: false,
+  controls: true,
+  displaytitle: false,
+  displaydescription: false,
+  visualplaylist: false,
   advertising: {
     client: "vast",
     schedule: [
