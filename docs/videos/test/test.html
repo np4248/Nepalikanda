@@ -1,67 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ad Trigger Video</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kanda Video Player</title>
   <link href="https://vjs.zencdn.net/7.21.1/video-js.css" rel="stylesheet" />
+
   <style>
     body {
-      background: #000;
       margin: 0;
+      background-color: #000;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
     }
-    .video-js .vjs-big-play-button {
-      display: none !important; /* hides overlay */
+
+    /* Overlay ad style */
+    #pause-ad {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+
+    #pause-ad iframe {
+      width: 80%;
+      height: 80%;
+      border: none;
+      border-radius: 8px;
+    }
+
+    #video-container {
+      position: relative;
+      width: 640px;
+      max-width: 95%;
     }
   </style>
 </head>
 <body>
+  <div id="video-container">
+    <video
+      id="my-video"
+      class="video-js vjs-default-skin"
+      controls
+      preload="auto"
+      width="640"
+      height="360"
+      data-setup="{}"
+    >
+      <source src="../../videoxx/video3.mp4" type="video/mp4" />
+    </video>
 
-  <video
-    id="my-video"
-    class="video-js vjs-default-skin"
-    controls
-    preload="auto"
-    width="640"
-    height="360"
-    data-setup="{}">
-    <source src="../../videoxx/video3.mp4" type="video/mp4" />
-  </video>
+    <div id="pause-ad">
+      <iframe
+        src="https://s.magsrv.com/v1/vast.php?idzone=5757698&ex_av=name"
+      ></iframe>
+    </div>
+  </div>
 
   <script src="https://vjs.zencdn.net/7.21.1/video.min.js"></script>
   <script>
-    const player = videojs('my-video');
+    const player = videojs("my-video");
+    const pauseAd = document.getElementById("pause-ad");
 
-    let clickCount = 0;
-
-    player.on('click', function () {
-      clickCount++;
-      if (clickCount % 2 === 0) {
-        // Trigger ad every 2 clicks
-        const adUrl = 'https://example.com/ad.mp4'; // replace with your ad
-        const currentTime = player.currentTime();
-
-        // Pause video
-        player.pause();
-
-        // Play ad in same player
-        player.src({ type: 'video/mp4', src: adUrl });
-        player.play();
-
-        // When ad ends, resume main video
-        player.on('ended', function resumeVideo() {
-          player.off('ended', resumeVideo);
-          player.src({ type: 'video/mp4', src: '../../videoxx/video3.mp4' });
-          player.currentTime(currentTime);
-          player.play();
-        });
+    // Show ad overlay when paused
+    player.on("pause", function () {
+      if (!player.ended()) {
+        pauseAd.style.display = "flex";
       }
     });
-  </script>
 
+    // Hide ad overlay and resume video when user presses play
+    player.on("play", function () {
+      pauseAd.style.display = "none";
+    });
+
+    // Optional: pre-roll ad example
+    player.ready(() => {
+      console.log("Video ready");
+    });
+  </script>
 </body>
 </html>
