@@ -1,127 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kanda Video + Click Ads</title>
-<style>
-  body { margin:0; background:#121212; color:#fff; font-family:Arial,sans-serif; display:flex; justify-content:center; align-items:center; height:100vh; }
-  .video-container { position:relative; max-width:900px; width:100%; }
-  #clickAdOverlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:10000; }
-  #adSlot { width:80%; height:60%; background:#000; border-radius:8px; overflow:hidden; }
-
-  /* Hide JW Player native pause overlay */
-  .jw-display-icon-container,
-  .jw-display-controls,
-  .jw-display-icon-overlay,
-  .jw-display-play {
-    display: none !important;
-    pointer-events: none !important;
-  }
-</style>
-
-<!-- JW Player CDN -->
-<script src="https://cdn.jwplayer.com/libraries/IDzF9Zmk.js"></script>
-<!-- Video.js CDN -->
-<link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
-<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/videojs-ima@1.8.0/dist/videojs.ima.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ad Trigger Video</title>
+  <link href="https://vjs.zencdn.net/7.21.1/video-js.css" rel="stylesheet" />
+  <style>
+    body {
+      background: #000;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .video-js .vjs-big-play-button {
+      display: none !important; /* hides overlay */
+    }
+  </style>
 </head>
 <body>
 
-<div class="video-container" id="videoContainer">
-  <div id="my-video"></div>
-  <div id="clickAdOverlay"><div id="adSlot"></div></div>
-</div>
+  <video
+    id="my-video"
+    class="video-js vjs-default-skin"
+    controls
+    preload="auto"
+    width="640"
+    height="360"
+    data-setup="{}">
+    <source src="../../videoxx/video3.mp4" type="video/mp4" />
+  </video>
 
-<script>
-const vastAds = [
-  "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757692",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757698"
-];
+  <script src="https://vjs.zencdn.net/7.21.1/video.min.js"></script>
+  <script>
+    const player = videojs('my-video');
 
-// --- JW Player setup for pre/mid/post-roll ---
-const player = jwplayer("my-video").setup({
-  file: "../../videoxx/video3.mp4",  // your local video
-  width: "100%",
-  aspectratio: "16:9",
-  autostart: false,
-  controls: true,
-  displaytitle: false,
-  displaydescription: false,
-  visualplaylist: false,
-  displayPlaybackLabel: false,
-  hideNativeControls: false,
-  stretching: "uniform",
-  advertising: {
-    client: "vast",
-    schedule: [
-      { offset: "pre", tag: vastAds[0], backupTag: [vastAds[1], vastAds[2], vastAds[3]] },
-      { offset: "50%", tag: vastAds[1], backupTag: [vastAds[2], vastAds[3], vastAds[0]] },
-      { offset: "post", tag: vastAds[2], backupTag: [vastAds[3], vastAds[0], vastAds[1]] }
-    ]
-  }
-});
+    let clickCount = 0;
 
-// --- Click-trigger overlay ads (every 2 clicks) ---
-const clickOverlay = document.getElementById('clickAdOverlay');
-const adSlot = document.getElementById('adSlot');
-let clickCount = 0;
-let overlayAdPlayer = null;
+    player.on('click', function () {
+      clickCount++;
+      if (clickCount % 2 === 0) {
+        // Trigger ad every 2 clicks
+        const adUrl = 'https://example.com/ad.mp4'; // replace with your ad
+        const currentTime = player.currentTime();
 
-document.getElementById('videoContainer').addEventListener('click', () => {
-  clickCount++;
-  if(clickCount >= 2){
-    clickCount = 0;
-    triggerClickAd();
-  }
-});
+        // Pause video
+        player.pause();
 
-function triggerClickAd(){
-  player.pause();
-  clickOverlay.style.display = 'flex';
+        // Play ad in same player
+        player.src({ type: 'video/mp4', src: adUrl });
+        player.play();
 
-  // Create overlay video for ad
-  const v = document.createElement('video');
-  v.id = 'overlayAd';
-  v.className = 'video-js vjs-default-skin';
-  v.setAttribute('playsinline','');
-  v.setAttribute('preload','auto');
-  adSlot.appendChild(v);
-
-  overlayAdPlayer = videojs(v, {controls:true, autoplay:true});
-  overlayAdPlayer.ima({ id:'overlayAd', adLabel:'Click Ad' });
-
-  let idx = 0;
-  function tryTag(){
-    if(idx >= vastAds.length){ endOverlayAd(); return; }
-    try{
-      overlayAdPlayer.ima.setAdTag(vastAds[idx]);
-      overlayAdPlayer.ima.requestAds();
-    } catch(e){
-      idx++;
-      tryTag();
-    }
-  }
-  tryTag();
-
-  overlayAdPlayer.on('ads-complete', endOverlayAd);
-  overlayAdPlayer.on('adserror', endOverlayAd);
-  overlayAdPlayer.on('ended', endOverlayAd);
-}
-
-function endOverlayAd(){
-  if(overlayAdPlayer){
-    overlayAdPlayer.dispose();
-    overlayAdPlayer = null;
-  }
-  adSlot.innerHTML = '';
-  clickOverlay.style.display = 'none';
-  player.play();
-}
-</script>
+        // When ad ends, resume main video
+        player.on('ended', function resumeVideo() {
+          player.off('ended', resumeVideo);
+          player.src({ type: 'video/mp4', src: '../../videoxx/video3.mp4' });
+          player.currentTime(currentTime);
+          player.play();
+        });
+      }
+    });
+  </script>
 
 </body>
 </html>
