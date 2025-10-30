@@ -1,150 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kanda Video - Three Player Ads</title>
-
-<!-- Video.js CSS -->
-<link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
-
-<style>
-body { margin:0; background:#121212; font-family:Arial,sans-serif; color:#fff; display:flex; justify-content:center; align-items:center; height:100vh; }
-.video-container { max-width:900px; width:100%; position:relative; }
-
-#pauseOverlay, #floatingOverlay { position:absolute; display:none; z-index:10000; border-radius:8px; overflow:hidden; }
-#pauseOverlay { top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); display:flex; justify-content:center; align-items:center; }
-#floatingOverlay { bottom:10px; right:10px; width:320px; height:180px; background:#000; box-shadow:0 10px 30px rgba(0,0,0,0.6); }
-
-.video-js { width:100% !important; height:100% !important; }
-</style>
-
-<!-- Video.js + IMA + Overlay plugin -->
-<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/videojs-ima@1.8.0/dist/videojs.ima.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/videojs-overlay@2.1.0/dist/videojs-overlay.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seek‑Roll Ad Demo</title>
+  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+  <style>
+    body { margin:0; background:#121212; color:#fff; font-family:Arial,sans-serif; display:flex; justify-content:center; align-items:center; height:100vh; }
+    .video-container { position:relative; width:100%; max-width:900px; }
+    #seekOverlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:10000; }
+    #seekSlot { width:80%; height:60%; background:#000; border-radius:8px; overflow:hidden; }
+    .video-js { width:100% !important; height:100% !important; }
+  </style>
+  <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/videojs-ima@1.8.0/dist/videojs.ima.min.js"></script>
 </head>
-
 <body>
+
 <div class="video-container">
-  <!-- Main Player -->
-  <video id="mainVideo" class="video-js vjs-default-skin" controls preload="auto" data-setup='{}'>
+  <video id="mainVideo" class="video-js vjs-default-skin" controls preload="auto">
     <source src="../../videoxx/video3.mp4" type="video/mp4" />
+    Your browser doesn’t support HTML5 video.
   </video>
-
-  <!-- Pause Overlay -->
-  <div id="pauseOverlay">
-    <div id="pauseSlot" style="width:80%; height:60%;"></div>
-  </div>
-
-  <!-- Floating Overlay -->
-  <div id="floatingOverlay">
-    <div id="floatingSlot" style="width:100%; height:100%;"></div>
-  </div>
+  <div id="seekOverlay"><div id="seekSlot"></div></div>
 </div>
 
 <script>
-const vastAds = [
-  "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757692",
-  "https://s.magsrv.com/v1/vast.php?idzone=5757698"
-];
+  const vastAds = [
+    "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
+    "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
+    "https://s.magsrv.com/v1/vast.php?idzone=5757692",
+    "https://s.magsrv.com/v1/vast.php?idzone=5757698"
+  ];
 
-// ------------------ MAIN PLAYER ------------------
-const mainPlayer = videojs('mainVideo');
+  const player = videojs('mainVideo');
+  let lastTime = 0;
+  let seekingAdPlaying = false;
+  const seekOverlay = document.getElementById('seekOverlay');
+  const seekSlot = document.getElementById('seekSlot');
+  let adPlayer = null;
 
-// IMA plugin for pre/mid/post-roll
-mainPlayer.ima({ id:'mainVideo', adLabel:'Advertisement' });
+  function playSeekAd(){
+    seekingAdPlaying = true;
+    player.pause();
+    seekOverlay.style.display = 'flex';
 
-// Pre-roll
-mainPlayer.on('ready', function(){
-  mainPlayer.ima.setAdTag(vastAds[0]);
-  mainPlayer.ima.requestAds();
-});
+    if(!adPlayer){
+      const v = document.createElement('video');
+      v.id = 'adVideo';
+      v.className = 'video-js vjs-default-skin';
+      v.setAttribute('playsinline','');
+      v.setAttribute('preload','auto');
+      seekSlot.appendChild(v);
+      adPlayer = videojs(v, {controls:true, autoplay:true});
+      adPlayer.ima({ id:'adVideo', adLabel:'Seek‑Roll Ad' });
+      adPlayer.on('adsready', () => adPlayer.ima.startAds());
+      adPlayer.on('adserror', endAd);
+      adPlayer.on('adscomplete', endAd);
+      adPlayer.on('ended', endAd);
+    }
 
-// Mid-roll at 50%
-mainPlayer.on('timeupdate', function(){
-  const current = mainPlayer.currentTime();
-  const duration = mainPlayer.duration();
-  if(!mainPlayer.midFired && duration && current >= duration*0.5){
-    mainPlayer.midFired = true;
-    mainPlayer.ima.setAdTag(vastAds[1]);
-    mainPlayer.ima.requestAds();
-  }
-});
-
-// Post-roll
-mainPlayer.on('ended', function(){
-  mainPlayer.ima.setAdTag(vastAds[2]);
-  mainPlayer.ima.requestAds();
-});
-
-// ------------------ PAUSE PLAYER ------------------
-const pauseOverlay = document.getElementById('pauseOverlay');
-const pauseSlot = document.getElementById('pauseSlot');
-let pausePlayer = null;
-
-mainPlayer.on('pause', function(){
-  if(mainPlayer.ended()) return;
-
-  pauseOverlay.style.display = 'flex';
-  if(!pausePlayer){
-    const v = document.createElement('video');
-    v.id = 'pauseInner';
-    v.className = 'video-js vjs-default-skin';
-    v.setAttribute('playsinline','');
-    v.setAttribute('preload','auto');
-    pauseSlot.appendChild(v);
-    pausePlayer = videojs(v, {controls:true, autoplay:true});
-    pausePlayer.ima({ id:'pauseInner', adLabel:'Pause Ad' });
+    // rotation of tags
+    let idx = 0;
+    function tryTag(){
+      if(idx >= vastAds.length) { endAd(); return; }
+      try {
+        adPlayer.ima.setAdTag(vastAds[idx]);
+        adPlayer.ima.requestAds();
+      } catch(e){
+        idx++;
+        tryTag();
+      }
+    }
+    tryTag();
   }
 
-  // Play pause ad with fallback rotation
-  let idx=0;
-  function playPauseAd(){
-    if(idx>=vastAds.length) return;
-    pausePlayer.ima.setAdTag(vastAds[idx]);
-    pausePlayer.ima.requestAds();
-    idx++;
+  function endAd(){
+    if(adPlayer){
+      adPlayer.dispose();
+      adPlayer = null;
+    }
+    seekOverlay.style.display = 'none';
+    seekingAdPlaying = false;
+    player.play();
   }
-  playPauseAd();
-});
 
-mainPlayer.on('play', function(){
-  pauseOverlay.style.display = 'none';
-  if(pausePlayer) pausePlayer.pause();
-});
-
-// ------------------ FLOATING/SEEK PLAYER ------------------
-const floatingOverlay = document.getElementById('floatingOverlay');
-const floatingSlot = document.getElementById('floatingSlot');
-let floatingPlayer = null;
-
-// Show floating at 10s for sticky
-mainPlayer.on('timeupdate', function(){
-  const current = mainPlayer.currentTime();
-  if(current>=10 && !floatingPlayer){
-    floatingOverlay.style.display='block';
-    const v = document.createElement('video');
-    v.id='floatingInner';
-    v.className='video-js vjs-default-skin';
-    v.setAttribute('playsinline','');
-    v.setAttribute('preload','auto');
-    floatingSlot.appendChild(v);
-    floatingPlayer = videojs(v,{controls:false, autoplay:true, muted:true});
-    floatingPlayer.ima({id:'floatingInner', adLabel:'Sticky Ad'});
-    floatingPlayer.ima.setAdTag(vastAds[3]);
-    floatingPlayer.ima.requestAds();
-  }
-  // Hide floating at 60s
-  if(current>=60 && floatingPlayer){
-    floatingOverlay.style.display='none';
-    try{ floatingPlayer.pause(); floatingPlayer.dispose(); } catch(e){}
-    floatingPlayer=null;
-    floatingSlot.innerHTML='';
-  }
-});
+  player.on('timeupdate', function(){
+    if(seekingAdPlaying) return;
+    const current = player.currentTime();
+    if(Math.abs(current - lastTime) > 5){
+      playSeekAd();
+    }
+    lastTime = current;
+  });
 </script>
+
 </body>
 </html>
