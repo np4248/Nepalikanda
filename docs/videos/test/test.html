@@ -3,220 +3,113 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kanda Video Test - Full Ads</title>
-
-<!-- Video.js CSS -->
+<title>Seek-Roll Test</title>
 <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
-
-<!-- Custom styles -->
 <style>
-  body { margin: 0; background: #121212; color: #fff; font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
-  .video-container { max-width: 900px; width: 100%; position: relative; }
-  .pause-ad, .floating-ad, .seek-ad { padding: 10px; border-radius: 6px; font-weight: bold; }
-  .pause-ad { background: rgba(0,0,0,0.8); color: #fff; }
-  .floating-ad { background: rgba(255,50,50,0.9); color: #fff; }
-  .seek-ad { background: rgba(50,50,50,0.9); color: #fff; }
+body { margin:0; background:#121212; font-family:Arial,sans-serif; color:#fff; display:flex; justify-content:center; align-items:center; height:100vh; }
+.video-container { max-width:900px; width:100%; position:relative; }
+#seekOverlay {
+  position:absolute;
+  top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.75);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:10000;
+}
+#seekSlot { width:80%; height:60%; background:#000; border-radius:8px; overflow:hidden; }
+.video-js { width:100% !important; height:100% !important; }
 </style>
-
-<!-- Video.js JS -->
 <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
-<!-- Video.js IMA plugin -->
 <script src="https://cdn.jsdelivr.net/npm/videojs-ima@1.8.0/dist/videojs.ima.min.js"></script>
-<!-- Video.js Overlay plugin -->
-<script src="https://cdn.jsdelivr.net/npm/videojs-overlay@2.1.0/dist/videojs-overlay.min.js"></script>
 </head>
-
 <body>
+
 <div class="video-container">
-  <video
-    id="my-video"
-    class="video-js vjs-default-skin"
-    controls
-    preload="auto"
-    width="900"
-    height="506"
-    data-setup='{}'>
+  <video id="mainVideo" class="video-js vjs-default-skin" controls preload="auto">
     <source src="../../videoxx/video3.mp4" type="video/mp4" />
   </video>
+
+  <div id="seekOverlay">
+    <div id="seekSlot"></div>
+  </div>
 </div>
 
 <script>
-  const vastAds = [
-    "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
-    "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
-    "https://s.magsrv.com/v1/vast.php?idzone=5757692",
-    "https://s.magsrv.com/v1/vast.php?idzone=5757698"
-  ];
+const vastAds = [
+  "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
+  "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
+  "https://s.magsrv.com/v1/vast.php?idzone=5757692",
+  "https://s.magsrv.com/v1/vast.php?idzone=5757698"
+];
 
-  const player = videojs('my-video');
+// Main Video.js player
+const player = videojs('mainVideo');
 
-  // ---------- IMA Ads setup ----------
-  player.ima({
-    id: 'my-video',
-    adLabel: 'Advertisement'
-  });
+// Track last time for detecting seek
+let lastTime = 0;
+let seekPlayer = null;
+const seekOverlay = document.getElementById('seekOverlay');
+const seekSlot = document.getElementById('seekSlot');
 
-  // Pre-roll (primary: 5755632), Mid-roll (5757688), Post-roll (5757692)
-  // Using requestAds() automatically triggers pre-roll
-  player.on('ready', function() {
-    player.ima.setAdTag(vastAds[0]);
-    player.ima.requestAds(); // pre-roll
-  });
+// Detect seek
+player.on('timeupdate', function(){
+  const current = player.currentTime();
+  if(Math.abs(current - lastTime) > 5){ // threshold for seek (5 seconds)
+    triggerSeekAd();
+  }
+  lastTime = current;
+});
 
-  // Mid-roll at 50%
-  player.on('timeupdate', function() {
-    const currentTime = player.currentTime();
-    const duration = player.duration();
-    if(!player.midFired && duration && currentTime >= duration * 0.5) {
-      player.midFired = true;
-      player.ima.setAdTag(vastAds[1]);
-      player.ima.requestAds();
+// Function to show seek ad
+function triggerSeekAd(){
+  if(seekPlayer) return; // already playing seek ad
+
+  player.pause();
+  seekOverlay.style.display = 'flex';
+
+  // Create inner player for ad
+  const v = document.createElement('video');
+  v.id = 'seekInner';
+  v.className = 'video-js vjs-default-skin';
+  v.setAttribute('playsinline','');
+  v.setAttribute('preload','auto');
+  seekSlot.appendChild(v);
+
+  seekPlayer = videojs(v, {controls:true, autoplay:true});
+  seekPlayer.ima({id:'seekInner', adLabel:'Seek Ad'});
+
+  // Rotate VAST links for backup
+  let idx = 0;
+  function playNextAd(){
+    if(idx >= vastAds.length){
+      endSeekAd();
+      return;
     }
-  });
-
-  // Post-roll at end
-  player.on('ended', function() {
-    player.ima.setAdTag(vastAds[2]);
-    player.ima.requestAds();
-  });
-
-  // ---------- Overlay Ads ----------
-  player.overlay({
-    overlays: [
-      // Pause overlay
-      {
-        content: '<div class="pause-ad">Pause Ad</div>',
-        start: 'pause',
-        end: 'play',
-        align: 'center'
-      },
-      // Floating Sticky
-      {
-        content: '<div class="floating-ad">Floating Sticky Ad</div>',
-        start: 10,
-        end: 60,
-        align: 'top-right'
-      },
-      // Seek Ad (at 50% playback)
-      {
-        content: '<div class="seek-ad">Seek Ad at 50%</div>',
-        start: player.duration() * 0.5,
-        end: player.duration() * 0.55,
-        align: 'center'
-      }
-    ]
-  });
-</script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kanda Video Test - Full Ads</title>
-
-<!-- Video.js CSS -->
-<link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
-
-<!-- Custom styles -->
-<style>
-  body { margin: 0; background: #121212; color: #fff; font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
-  .video-container { max-width: 900px; width: 100%; position: relative; }
-  .pause-ad, .floating-ad, .seek-ad { padding: 10px; border-radius: 6px; font-weight: bold; }
-  .pause-ad { background: rgba(0,0,0,0.8); color: #fff; }
-  .floating-ad { background: rgba(255,50,50,0.9); color: #fff; }
-  .seek-ad { background: rgba(50,50,50,0.9); color: #fff; }
-</style>
-
-<!-- Video.js JS -->
-<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
-<!-- Video.js IMA plugin -->
-<script src="https://cdn.jsdelivr.net/npm/videojs-ima@1.8.0/dist/videojs.ima.min.js"></script>
-<!-- Video.js Overlay plugin -->
-<script src="https://cdn.jsdelivr.net/npm/videojs-overlay@2.1.0/dist/videojs-overlay.min.js"></script>
-</head>
-
-<body>
-<div class="video-container">
-  <video
-    id="my-video"
-    class="video-js vjs-default-skin"
-    controls
-    preload="auto"
-    width="900"
-    height="506"
-    data-setup='{}'>
-    <source src="../../videoxx/video3.mp4" type="video/mp4" />
-  </video>
-</div>
-
-<script>
-  const vastAds = [
-    "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
-    "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
-    "https://s.magsrv.com/v1/vast.php?idzone=5757692",
-    "https://s.magsrv.com/v1/vast.php?idzone=5757698"
-  ];
-
-  const player = videojs('my-video');
-
-  // ---------- IMA Ads setup ----------
-  player.ima({
-    id: 'my-video',
-    adLabel: 'Advertisement'
-  });
-
-  // Pre-roll (primary: 5755632), Mid-roll (5757688), Post-roll (5757692)
-  // Using requestAds() automatically triggers pre-roll
-  player.on('ready', function() {
-    player.ima.setAdTag(vastAds[0]);
-    player.ima.requestAds(); // pre-roll
-  });
-
-  // Mid-roll at 50%
-  player.on('timeupdate', function() {
-    const currentTime = player.currentTime();
-    const duration = player.duration();
-    if(!player.midFired && duration && currentTime >= duration * 0.5) {
-      player.midFired = true;
-      player.ima.setAdTag(vastAds[1]);
-      player.ima.requestAds();
+    try{
+      seekPlayer.ima.setAdTag(vastAds[idx]);
+      seekPlayer.ima.requestAds();
+      idx++;
+    }catch(e){
+      playNextAd();
     }
-  });
+  }
+  playNextAd();
 
-  // Post-roll at end
-  player.on('ended', function() {
-    player.ima.setAdTag(vastAds[2]);
-    player.ima.requestAds();
-  });
+  // Hide overlay after ad completes
+  seekPlayer.on('ads-complete', endSeekAd);
+  seekPlayer.on('ended', endSeekAd);
+}
 
-  // ---------- Overlay Ads ----------
-  player.overlay({
-    overlays: [
-      // Pause overlay
-      {
-        content: '<div class="pause-ad">Pause Ad</div>',
-        start: 'pause',
-        end: 'play',
-        align: 'center'
-      },
-      // Floating Sticky
-      {
-        content: '<div class="floating-ad">Floating Sticky Ad</div>',
-        start: 10,
-        end: 60,
-        align: 'top-right'
-      },
-      // Seek Ad (at 50% playback)
-      {
-        content: '<div class="seek-ad">Seek Ad at 50%</div>',
-        start: player.duration() * 0.5,
-        end: player.duration() * 0.55,
-        align: 'center'
-      }
-    ]
-  });
+function endSeekAd(){
+  if(seekPlayer){
+    seekOverlay.style.display='none';
+    try{ seekPlayer.dispose(); } catch(e){}
+    seekSlot.innerHTML='';
+    seekPlayer=null;
+  }
+  player.play();
+}
 </script>
 </body>
 </html>
