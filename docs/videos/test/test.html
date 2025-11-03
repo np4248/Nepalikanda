@@ -3,71 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2-Click Ad Trigger | JW Player</title>
+  <title>Kanda Video Test | 2-Click Ad Trigger</title>
   <style>
-    body {
-      margin: 0;
-      background-color: #000;
+    body { 
+      margin: 0; 
+      background-color: #121212; 
+      color: #fff; 
+      font-family: Arial, sans-serif; 
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
     }
-    #video-container {
-      width: 90%;
-      max-width: 800px;
+    #video-container { 
+      width: 90%; 
+      max-width: 900px; 
+      position: relative; 
     }
   </style>
+  <!-- JW Player CDN -->
   <script src="https://cdn.jwplayer.com/libraries/IDzF9Zmk.js"></script>
 </head>
 <body>
 
-  <div id="video-container"></div>
+<div id="video-container">
+  <div id="my-video"></div>
+</div>
 
-  <script>
-    const vastAds = [
-      "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
-      "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
-      "https://s.magsrv.com/v1/vast.php?idzone=5757692&ex_av=name",
-      "https://s.magsrv.com/v1/vast.php?idzone=5757698&ex_av=name"
-    ];
+<script>
+  const vastAds = [
+    "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
+    "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
+    "https://s.magsrv.com/v1/vast.php?idzone=5757692",
+    "https://s.magsrv.com/v1/vast.php?idzone=5757698"
+  ];
 
-    let adIndex = 0;
-    let clickCount = 0;
+  let adIndex = 0;
+  let clickCount = 0;
 
-    const player = jwplayer("video-container").setup({
-      file: "../../videoxx/video3.mp4",
-      width: "100%",
-      aspectratio: "16:9",
-      autostart: false,
-      advertising: {
-        client: "vast"
+  const player = jwplayer("my-video").setup({
+    file: "../../videoxx/video3.mp4",
+    width: "100%",
+    aspectratio: "16:9",
+    autostart: false,
+    advertising: {
+      client: "vast",
+      schedule: [
+        { offset: "pre", tag: vastAds[0], admessage: "Your ad will start in %%SECONDS%% seconds" },
+        { offset: "2:00", tag: vastAds[1], admessage: "Your ad will start in %%SECONDS%% seconds" },
+        { offset: "post", tag: vastAds[2], admessage: "Your ad will start in %%SECONDS%% seconds" },
+        { offset: "pause", tag: vastAds[3], admessage: "Your ad will start in %%SECONDS%% seconds" }
+      ]
+    }
+  });
+
+  // 2-Click Ad Trigger Logic
+  player.on("ready", function() {
+    const container = player.getContainer();
+
+    container.addEventListener("click", function() {
+      clickCount++;
+      console.log("Clicked", clickCount);
+
+      if (clickCount % 2 === 0) {
+        const adTag = vastAds[adIndex];
+        adIndex = (adIndex + 1) % vastAds.length;
+
+        console.log("Playing Ad:", adTag);
+        player.playAd(adTag);
       }
     });
 
-    // Wait until the player is ready before binding clicks
-    player.on("ready", function() {
-      const container = player.getContainer();
-
-      container.addEventListener("click", function() {
-        clickCount++;
-        console.log("Clicked", clickCount);
-
-        if (clickCount % 2 === 0) {
-          const adTag = vastAds[adIndex];
-          adIndex = (adIndex + 1) % vastAds.length;
-
-          console.log("Playing Ad:", adTag);
-          player.playAd(adTag);
-        }
-      });
-
-      player.on("adComplete", function() {
-        console.log("Ad finished, resuming video");
-        player.play(true);
-      });
+    player.on("adComplete", function() {
+      console.log("Ad finished, resuming video");
+      player.play(true);
     });
-  </script>
+  });
+</script>
 
 </body>
 </html>
