@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2-Click Ad Trigger</title>
+  <title>2-Click Ad Trigger | JW Player</title>
   <style>
     body {
       margin: 0;
@@ -13,17 +13,16 @@
       align-items: center;
       height: 100vh;
     }
-    #my-video {
+    #video-container {
       width: 90%;
       max-width: 800px;
     }
   </style>
-  <!-- JW Player -->
   <script src="https://cdn.jwplayer.com/libraries/IDzF9Zmk.js"></script>
 </head>
 <body>
 
-  <div id="my-video"></div>
+  <div id="video-container"></div>
 
   <script>
     const vastAds = [
@@ -35,9 +34,8 @@
 
     let adIndex = 0;
     let clickCount = 0;
-    let player;
 
-    player = jwplayer("my-video").setup({
+    const player = jwplayer("video-container").setup({
       file: "../../videoxx/video3.mp4",
       width: "100%",
       aspectratio: "16:9",
@@ -47,26 +45,28 @@
       }
     });
 
-    // Handle click events
-    document.getElementById("my-video").addEventListener("click", function() {
-      clickCount++;
-      if (clickCount % 2 === 0) {
-        playAd();
-      }
-    });
+    // Wait until the player is ready before binding clicks
+    player.on("ready", function() {
+      const container = player.getContainer();
 
-    // Function to play the ad
-    function playAd() {
-      const adTag = vastAds[adIndex];
-      adIndex = (adIndex + 1) % vastAds.length;
+      container.addEventListener("click", function() {
+        clickCount++;
+        console.log("Clicked", clickCount);
 
-      player.pause(true);
-      player.playAd(adTag);
+        if (clickCount % 2 === 0) {
+          const adTag = vastAds[adIndex];
+          adIndex = (adIndex + 1) % vastAds.length;
+
+          console.log("Playing Ad:", adTag);
+          player.playAd(adTag);
+        }
+      });
 
       player.on("adComplete", function() {
+        console.log("Ad finished, resuming video");
         player.play(true);
       });
-    }
+    });
   </script>
 
 </body>
