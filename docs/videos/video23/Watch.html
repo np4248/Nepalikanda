@@ -240,42 +240,37 @@
 
   <!-- Smart Link Script -->
   <script>
-  // Smartlink for fake buttons (still active)
+  // Keep Smartlink active for fake buttons if you want
   const smartLink = "https://foreststobaccodecember.com/ue6fbh7t?key=afd82614b701ad72363e34ad85809f94";
 
-  // Fake buttons open Smartlink
-  document.getElementById('fake1').addEventListener('click', () => {
-    window.open(smartLink, "_blank");
-  });
-  document.getElementById('fake2').addEventListener('click', () => {
-    window.open(smartLink, "_blank");
-  });
+  // Fake buttons still open Smartlink
+  document.getElementById('fake1').addEventListener('click', () => { window.open(smartLink, "_blank"); });
+  document.getElementById('fake2').addEventListener('click', () => { window.open(smartLink, "_blank"); });
 
-  // Real Continue button (now single click)
-  const nextStep = "https://1024terabox.com/s/1bofv81De8UTw8EI8nZszdQ";
+  // Real "Continue" button → only one click now
+  const nextStep = "Enjoy.html";
   const realContinueBtn = document.getElementById('realContinue');
 
   realContinueBtn.addEventListener('click', () => {
-    window.location.href = nextStep; // Directly goes to TeraBox link
+    window.location.href = nextStep; // directly goes to Step 2
   });
-
-
-    // Timer
-    let timeLeft = 10;
+    // Timer: 1 displayed sec = 2 real sec
+    let timeLeft = 8;
     const countElem = document.getElementById('count');
     const timerElem = document.getElementById('timer');
-    realContinueBtn.style.display = "none";
+
+    realContinueBtn.style.display = "none"; // hide initially
 
     const timer = setInterval(() => {
       timeLeft--;
       countElem.textContent = timeLeft;
       if(timeLeft <= 0){
         clearInterval(timer);
-        timerElem.textContent = "Scroll down and find the yellow Continue button!";
-        timerElem.style.color = "#ffcc00";
-        realContinueBtn.style.display = "block";
+        timerElem.textContent = "Scroll down and find the orange Continue button!";
+        timerElem.style.color = "#ff8c00"; // orange for this page
+        realContinueBtn.style.display = "block"; // show the real continue button
       }
-    }, 1400);
+    }, 1300);
   </script>
   <script type='text/javascript' src='//foreststobaccodecember.com/64/fc/f3/64fcf31361724f7ae6d406a6e1d14764.js'></script>
 
