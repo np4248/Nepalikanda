@@ -1,182 +1,383 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Kanda Video</title>
-
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kanda Video — Ready</title>
   <style>
+    /* Page styling: clean dark / orange accent (Pornhub-like) */
+    :root {
+      --bg: #0f0f0f;
+      --panel: #171717;
+      --muted: #bfbfbf;
+      --accent: #ffa31a;
+      --border: #242424;
+    }
     body {
       margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background-color: #0e0e0e;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
       color: #fff;
     }
-
     header {
-      background-color: #1b1b1b;
-      padding: 25px 20px;
+      background: #121212;
+      border-bottom: 3px solid var(--accent);
+      padding: 20px;
       text-align: center;
-      border-bottom: 3px solid #ffa31a;
     }
-
     header h1 {
-      color: #ffa31a;
-      font-size: 42px;
       margin: 0;
+      color: var(--accent);
+      font-size: 34px;
+      letter-spacing: 1px;
     }
-
     main {
-      max-width: 950px;
-      margin: 40px auto;
-      padding: 0 20px;
+      max-width: 980px;
+      margin: 32px auto;
+      padding: 0 16px;
     }
 
-    /* Pornhub-style video section */
-    .video-container {
-      background-color: #1a1a1a;
-      border-radius: 8px;
-      padding: 15px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
-      border: 1px solid #2a2a2a;
-    }
-
-    .video-container h2 {
-      color: #ffa31a;
-      font-size: 20px;
-      margin: 10px 0 15px 0;
-      text-align: left;
-    }
-
-    #my-video {
-      width: 100%;
+    /* Video panel: simple, centered, clean */
+    .video-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
       border-radius: 6px;
-      overflow: hidden;
+      padding: 14px;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.6);
     }
 
+    .video-title {
+      color: var(--accent);
+      font-size: 18px;
+      margin: 0 0 10px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .video-meta {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* JW player container size */
+    #player-wrap { width: 100%; }
+    #my-video { width: 100%; border-radius: 6px; overflow: hidden; background: #000; }
+
+    /* Community + footer */
+    .community { margin-top: 18px; color: var(--muted); }
+    .community a { color: var(--accent); text-decoration: none; font-weight: 600; }
     footer {
-      background-color: #1b1b1b;
-      color: #aaa;
-      padding: 30px 20px;
-      text-align: left;
-      font-size: 14px;
-      border-top: 3px solid #ffa31a;
+      margin-top: 26px;
+      background: #111;
+      padding: 18px;
+      color: #bbb;
+      border-top: 3px solid var(--accent);
+      font-size: 13px;
     }
 
-    footer a {
-      color: #ffa31a;
-      text-decoration: none;
-    }
-
-    footer a:hover {
-      text-decoration: underline;
-    }
-
-    .community a {
-      color: #ffa31a;
-      font-weight: bold;
-      text-decoration: none;
-    }
-
-    .community img {
-      width: 24px;
-      height: 24px;
-      vertical-align: middle;
-      margin-right: 8px;
+    /* Responsive */
+    @media (max-width: 640px) {
+      header h1 { font-size: 26px; }
     }
   </style>
-
-  <!-- JW Player -->
+  <!-- JW Player CDN -->
   <script src="https://cdn.jwplayer.com/libraries/IDzF9Zmk.js"></script>
 </head>
 <body>
   <header>
     <h1>Kanda Video</h1>
-    <p>Welcome baby! 💋💦</p>
   </header>
 
   <main>
-  
+    <div class="video-panel">
+      <div class="video-title">
+        <div>
+          <strong>Now Playing:</strong>
+          <span class="video-meta" id="video-name">video1.mp4</span>
+        </div>
+        <div class="video-meta">Views: -- • Duration: --</div>
+      </div>
 
-    <!-- Video Section -->
-    <div class="video-container">
-      <h2>🔥 Hot Nepali Kanda Video 🔥</h2>
-      <div id="my-video"></div>
+      <div id="player-wrap">
+        <div id="my-video"></div>
+      </div>
+
+      <div class="community">
+        <p>Share / Join: 
+          <a href="https://www.facebook.com/share/18bbW7JyDN/" target="_blank">Facebook</a> ·
+          <a href="https://t.me/+uQ1AmpYXktczNzJl" target="_blank">Telegram</a>
+        </p>
+      </div>
     </div>
 
-    <script>
-      const vastAds = [
-        "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
-        "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
-        "https://s.magsrv.com/v1/vast.php?idzone=5757692",
-        "https://s.magsrv.com/v1/vast.php?idzone=5757698"
-      ];
+    <!-- top ad slot (kept as you had it) -->
+    <div id="top-ad" style="margin-top:14px;">
+      <script async data-cfasync="false" src="//foreststobaccodecember.com/82059b721a0802c6db6c59e17354e157/invoke.js"></script>
+      <div id="container-82059b721a0802c6db6c59e17354e157"></div>
+    </div>
 
-      let adIndex = 0;
-      let clickCount = 0;
+  </main>
 
-      // JW Player Setup
-      const player = jwplayer("my-video").setup({
-        file: "../../videoxx/video1.mp4", // your video file
-        image: "../../videoxx/video1-thumbnail.jpg", // <-- add your thumbnail image here
+  <footer>
+    <p>&copy; 2025 Nepali Kanda — All rights reserved.</p>
+    <p>18 U.S.C. 2257 Compliance Statement. DMCA: <a href="mailto:nepalikanda4248@gmail.com">nepalikanda4248@gmail.com</a></p>
+  </footer>
+
+  <!-- Full player + robust fallback script -->
+  <script>
+  (function(){
+    // ---------- Config ----------
+    const VIDEO_SRC = "../../videoxx/video1.mp4";   // change per video as needed
+    const VIDEO_NAME = "video1.mp4";
+    const CLICK_TRIGGER_COUNT = 3;                 // every 3 clicks
+    const AD_TIMEOUT_MS = 8000;                    // wait for ad to start within 8s
+
+    // Your VAST tags
+    const vastAds = [
+      "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name", // 0 - pre primary
+      "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name", // 1 - mid primary
+      "https://s.magsrv.com/v1/vast.php?idzone=5757692",           // 2 - post primary
+      "https://s.magsrv.com/v1/vast.php?idzone=5757698"            // 3 - click primary
+    ];
+
+    // ordered backups per roll (primary first)
+    const rollAds = {
+      pre:  [ vastAds[0], vastAds[1], vastAds[2], vastAds[3] ],
+      mid:  [ vastAds[1], vastAds[2], vastAds[3], vastAds[0] ],
+      post: [ vastAds[2], vastAds[3], vastAds[0], vastAds[1] ],
+      pause:[ vastAds[3], vastAds[0], vastAds[1], vastAds[2] ]
+    };
+
+    // ---------- Utilities ----------
+    function log() { console.log.apply(console, arguments); }
+    function warn() { console.warn.apply(console, arguments); }
+    function error() { console.error.apply(console, arguments); }
+
+    // Attempts to capture a thumbnail frame from video (returns Promise<string dataURL>)
+    function captureVideoThumbnail(src, seekTo = 0.5, timeout = 7000) {
+      return new Promise((resolve, reject) => {
+        try {
+          const video = document.createElement('video');
+          video.crossOrigin = 'anonymous';
+          video.muted = true;
+          video.src = src;
+          video.preload = 'metadata';
+          video.playsInline = true;
+          video.style.display = 'none';
+          document.body.appendChild(video);
+
+          let settled = false;
+          const cleanup = () => { try { video.pause(); video.removeAttribute('src'); video.load && video.load(); } catch(e){} if (video.parentNode) video.parentNode.removeChild(video); };
+
+          const onError = function(e) {
+            if (settled) return;
+            settled = true;
+            cleanup();
+            reject(new Error('Video load error or CORS prevented thumbnail capture'));
+          };
+
+          const onCanPlay = function() {
+            // seek to a time (safe within duration)
+            const duration = isFinite(video.duration) ? video.duration : 0;
+            const target = Math.min(seekTo, Math.max(0.1, duration * 0.05 || 0.5));
+            const trySeek = function() {
+              video.currentTime = target;
+            };
+            // ensure seeking events
+            video.addEventListener('seeked', function handleSeek() {
+              try {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 360;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                if (!settled) {
+                  settled = true;
+                  cleanup();
+                  resolve(dataUrl);
+                }
+              } catch (err) {
+                if (!settled) {
+                  settled = true;
+                  cleanup();
+                  reject(err);
+                }
+              }
+            }, { once: true });
+
+            trySeek();
+          };
+
+          // timeout
+          const t = setTimeout(function(){
+            if (settled) return;
+            settled = true;
+            cleanup();
+            reject(new Error('Thumbnail capture timed out'));
+          }, timeout);
+
+          video.addEventListener('error', function() { clearTimeout(t); onError(); }, { once: true });
+          video.addEventListener('loadedmetadata', function(){}, { once: true });
+          video.addEventListener('canplay', function(){ clearTimeout(t); onCanPlay(); }, { once: true });
+
+        } catch (err) {
+          reject(err);
+        }
+      });
+    }
+
+    // ---------- JW Player fallback ad runner ----------
+    // sequentially tries tags in tagsArray until ad starts or array exhausted
+    function playAdWithFallback(player, tagsArray, onFinalFailure) {
+      let idx = 0;
+      let adStarted = false;
+      let adTimeout = null;
+
+      function cleanup() {
+        if (adTimeout) { clearTimeout(adTimeout); adTimeout = null; }
+        player.off('adStarted', onAdStarted);
+        player.off('adError', onAdError);
+        player.off('adComplete', onAdComplete);
+      }
+
+      function onAdStarted() {
+        adStarted = true;
+        cleanup();
+        log('[VAST] adStarted for tag', tagsArray[idx]);
+      }
+      function onAdError(e) {
+        warn('[VAST] adError for tag', tagsArray[idx], e);
+        tryNext();
+      }
+      function onAdComplete() {
+        cleanup();
+        log('[VAST] adComplete');
+      }
+
+      function tryNext() {
+        cleanup();
+        idx++;
+        if (idx >= tagsArray.length) {
+          error('[VAST] all fallbacks failed for this ad slot');
+          if (typeof onFinalFailure === 'function') onFinalFailure();
+          return;
+        }
+        playCurrent();
+      }
+
+      function playCurrent() {
+        adStarted = false;
+        const tag = tagsArray[idx];
+        log('[VAST] attempting tag', idx, tag);
+
+        player.on('adStarted', onAdStarted);
+        player.on('adError', onAdError);
+        player.on('adComplete', onAdComplete);
+
+        adTimeout = setTimeout(function() {
+          if (!adStarted) {
+            warn('[VAST] ad start timeout for tag', tagsArray[idx]);
+            tryNext();
+          }
+        }, AD_TIMEOUT_MS);
+
+        try {
+          player.playAd(tag);
+        } catch (err) {
+          error('[VAST] playAd threw', err);
+          tryNext();
+        }
+      }
+
+      // begin
+      idx = 0;
+      playCurrent();
+    }
+
+    // ---------- Initialize player after creating poster ----------
+    (async function init() {
+      // show video name
+      document.getElementById('video-name').textContent = VIDEO_NAME;
+
+      // attempt to create poster from the video file
+      let posterDataUrl = null;
+      try {
+        posterDataUrl = await captureVideoThumbnail(VIDEO_SRC, 0.5, 6000);
+        log('[UI] captured poster from video');
+      } catch (err) {
+        warn('[UI] poster capture failed:', err.message || err);
+        posterDataUrl = null; // fallback: JW will display black poster; you may supply custom later
+      }
+
+      // JW Player setup (use the primary tags in schedule but backups set as arrays too)
+      const player = jwplayer('my-video').setup({
+        file: VIDEO_SRC,
+        image: posterDataUrl || '', // will be empty string if capture failed
         width: "100%",
         aspectratio: "16:9",
         autostart: false,
         advertising: {
           client: "vast",
           schedule: [
-            { offset: "pre",  tag: vastAds[0] },
-            { offset: "2:00", tag: vastAds[1] },
-            { offset: "post", tag: vastAds[2] },
-            { offset: "pause", tag: vastAds[3] }
+            { offset: "pre",  tag: rollAds.pre[0],  backupTag: rollAds.pre.slice(1) },
+            { offset: "2:00", tag: rollAds.mid[0],  backupTag: rollAds.mid.slice(1) },
+            { offset: "post", tag: rollAds.post[0], backupTag: rollAds.post.slice(1) },
+            { offset: "pause", tag: rollAds.pause[0], backupTag: rollAds.pause.slice(1) }
           ]
         }
       });
 
-      // 3-Click Ad Trigger
-      player.on("ready", function() {
+      // basic debug logs
+      player.on('ready', function() { log('[JW] player ready'); });
+
+      // Track scheduled ad failures: JW will sometimes auto-try backupTag items, but if not playable, we log
+      player.on('adError', function(e) { warn('[JW] global adError', e); });
+
+      // click-trigger rotation with fallback
+      let clickCount = 0;
+      let clickRotateIndex = 0;
+
+      player.on('ready', function(){
         const container = player.getContainer();
 
-        container.addEventListener("click", function() {
+        container.addEventListener('click', function(e){
           clickCount++;
-          console.log("Clicked", clickCount);
+          log('[UI] click', clickCount);
 
-          if (clickCount % 3 === 0) {
-            const adTag = vastAds[adIndex];
-            adIndex = (adIndex + 1) % vastAds.length;
-            console.log("Playing Ad:", adTag);
-            player.playAd(adTag);
+          if (clickCount % CLICK_TRIGGER_COUNT === 0) {
+            // build ordered tag list starting from clickRotateIndex for rotation
+            const ordered = [];
+            for (let i = 0; i < rollAds.pause.length; i++) {
+              ordered.push( rollAds.pause[(clickRotateIndex + i) % rollAds.pause.length] );
+            }
+            clickRotateIndex = (clickRotateIndex + 1) % rollAds.pause.length;
+
+            playAdWithFallback(player, ordered, function(){
+              // final failure: resume playback
+              warn('[VAST] click ad and all fallbacks failed, resuming');
+              try { player.play(true); } catch(e){}
+            });
           }
         });
-
-        player.on("adComplete", function() {
-          console.log("Ad finished, resuming video");
-          player.play(true);
-        });
       });
-    </script>
 
-    <!-- Community -->
-    <section class="community" style="margin-top:40px;">
-      <h2>Community & Contact</h2>
-      <p>Stay connected for more exclusive Nepali videos!</p>
-      <p>
-        <a href="https://www.facebook.com/share/18bbW7JyDN/" target="_blank">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook"> Facebook Page
-        </a>
-      </p>
-      <p>
-        <a href="https://t.me/+uQ1AmpYXktczNzJl" target="_blank">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram"> Join Telegram
-        </a>
-      </p>
-    </section>
-  </main>
+      // Optional: intercept scheduled ad starts and ensure ad is actually playable
+      // Note: JW will try backupTag automatically but may not catch 'silent' VASTs (no MediaFile).
+      // We listen and log adStarted/adImpression to know an ad actually started.
+      player.on('adStarted', function(){ log('[JW] adStarted'); });
+      player.on('adImpression', function(){ log('[JW] adImpression'); });
+      player.on('adComplete', function(){ log('[JW] adComplete'); });
 
-  <footer>
-    <p>&copy; 2025 Nepali Kanda. All rights reserved.</p>
-    <p><strong>18 U.S.C. 2257 Compliance Statement:</strong> All models appearing on this website are 18 years or older at the time of production. Nepali Kanda does not host or produce any videos on its servers.</p>
-    <p><strong>DMCA Contact:</strong> <a href="mailto:nepalikanda4248@gmail.com">nepalikanda4248@gmail.com</a></p>
-  </footer>
+      // If you want the same robust fallback for scheduled ad slots (pre/mid/post),
+      // we could intercept the scheduled event (jwplayer doesn't expose "scheduled about-to-play slot"),
+      // so robust coverage for scheduled slots requires either using player.playAd() manually at
+      // those offsets or relying on backupTag + adError + this global logic. The click-trigger
+      // fallback is explicit and will sequentially try tags.
+    })();
+
+  })();
+  </script>
 </body>
 </html>
