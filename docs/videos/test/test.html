@@ -1,73 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2-Click Ad Trigger | JW Player</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kanda Video</title>
+
   <style>
     body {
       margin: 0;
-      background-color: #000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #121212;
+      color: #fff;
+      line-height: 1.7;
     }
-    #video-container {
-      width: 90%;
+
+    header {
+      background-color: #1f1f1f;
+      padding: 30px 20px;
+      text-align: center;
+      border-bottom: 3px solid #ff3333;
+    }
+
+    header h1 {
+      color: #ff3333;
+      font-size: 48px;
+      margin: 0;
+      letter-spacing: 2px;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .video-container {
+      margin: 20px 0;
+      text-align: center;
+      background-color: #000;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
       max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 0 10px rgba(255, 51, 51, 0.5);
+    }
+
+    .video-container img {
+      width: 100%;
+      display: block;
+    }
+
+    .video-container #video-player {
+      width: 100%;
+      height: 100%;
+    }
+
+    footer {
+      background-color: #1f1f1f;
+      color: #ccc;
+      padding: 30px 20px;
+      text-align: left;
+      font-size: 14px;
+      line-height: 1.5;
+      border-top: 3px solid #ff3333;
+    }
+
+    footer a { color: #ff6666; text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    .community a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .community img {
+      width: 24px;
+      height: 24px;
     }
   </style>
+
+  <!-- JW Player CDN -->
   <script src="https://cdn.jwplayer.com/libraries/IDzF9Zmk.js"></script>
 </head>
 <body>
+  <header>
+    <h1>Kanda Video</h1>
+    <p>Welcome baby!💋💦</p>
+  </header>
 
-  <div id="video-container"></div>
+  <main>
+    <!-- Top Ad Script -->
+    <script async="async" data-cfasync="false" src="//foreststobaccodecember.com/82059b721a0802c6db6c59e17354e157/invoke.js"></script>
+    <div id="container-82059b721a0802c6db6c59e17354e157"></div>
 
-  <script>
-    const vastAds = [
-      "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
-      "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
-      "https://s.magsrv.com/v1/vast.php?idzone=5757692&ex_av=name",
-      "https://s.magsrv.com/v1/vast.php?idzone=5757698&ex_av=name"
-    ];
+    <!-- Video Section -->
+    <div class="video-container">
+      <img src="../../videoxx/video1-thumbnail.jpg" alt="Video Thumbnail"> <!-- Video thumbnail -->
+      <div id="video-player"></div>
+      <!-- Video Name: video1.mp4 -->
+    </div>
 
-    let adIndex = 0;
-    let clickCount = 0;
+    <script>
+      const vastAds = [
+        "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
+        "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
+        "https://s.magsrv.com/v1/vast.php?idzone=5757692",
+        "https://s.magsrv.com/v1/vast.php?idzone=5757698"
+      ];
 
-    const player = jwplayer("video-container").setup({
-      file: "../../videoxx/video3.mp4",
-      width: "100%",
-      aspectratio: "16:9",
-      autostart: false,
-      advertising: {
-        client: "vast"
-      }
-    });
+      let adIndex = 0;
+      let clickCount = 0;
 
-    // Wait until the player is ready before binding clicks
-    player.on("ready", function() {
-      const container = player.getContainer();
-
-      container.addEventListener("click", function() {
-        clickCount++;
-        console.log("Clicked", clickCount);
-
-        if (clickCount % 2 === 0) {
-          const adTag = vastAds[adIndex];
-          adIndex = (adIndex + 1) % vastAds.length;
-
-          console.log("Playing Ad:", adTag);
-          player.playAd(adTag);
+      const player = jwplayer("video-player").setup({
+        file: "../../videoxx/video1.mp4",
+        width: "100%",
+        aspectratio: "16:9",
+        autostart: false,
+        image: "../../videoxx/video1-thumbnail.jpg", // Thumbnail for video
+        advertising: {
+          client: "vast",
+          schedule: [
+            { offset: "pre", tag: vastAds[0], admessage: "Your ad will start in %%SECONDS%% seconds" },
+            { offset: "50%", tag: vastAds[1], admessage: "Your ad will start in %%SECONDS%% seconds" },
+            { offset: "post", tag: vastAds[2], admessage: "Your ad will start in %%SECONDS%% seconds" }
+          ]
         }
       });
 
-      player.on("adComplete", function() {
-        console.log("Ad finished, resuming video");
-        player.play(true);
-      });
-    });
-  </script>
+      // 3-Click Ad Trigger
+      player.on("ready", function() {
+        const container = player.getContainer();
+        container.addEventListener("click", function() {
+          clickCount++;
+          console.log("Clicked", clickCount);
+          if (clickCount % 3 === 0) {
+            const adTag = vastAds[adIndex];
+            adIndex = (adIndex + 1) % vastAds.length;
+            console.log("Playing Ad:", adTag);
+            player.playAd(adTag);
+          }
+        });
 
+        player.on("adComplete", function() {
+          console.log("Ad finished, resuming video");
+          player.play(true);
+        });
+      });
+    </script>
+
+    <!-- Community & Contact -->
+    <section class="community">
+      <h2>Community & Contact</h2>
+      <p>Stay connected via Telegram. Questions or suggestions? Email me:</p>
+      <p>
+        <a href="https://www.facebook.com/share/18bbW7JyDN/" target="_blank" style="color:#3b5998;">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook"> Visit our Facebook Page
+        </a>
+      </p>
+      <p>
+        <a href="https://t.me/+uQ1AmpYXktczNzJl" target="_blank" style="color:#0088cc;">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram"> Join our Telegram for more Videos
+        </a>
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Nepali Kanda. All rights reserved.</p>
+    <p><strong>18 U.S.C. 2257 Compliance Statement:</strong> All models appearing on this website are 18 years or older at the time of production. Nepali Kanda does not host or produce any videos on its servers. All videos are linked from third-party services and publicly available.</p>
+    <p><strong>DMCA Contact:</strong> <a href="mailto:p1ussyl1over@gmail.com">nepalikanda4248@gmail.com</a></p>
+  </footer>
 </body>
 </html>
