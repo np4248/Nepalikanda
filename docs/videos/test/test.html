@@ -32,20 +32,20 @@
       padding: 0 20px;
     }
 
-    /* Updated Pornhub-style video container */
+    /* Pornhub-style video section */
     .video-container {
       background-color: #1a1a1a;
       border-radius: 8px;
       padding: 15px;
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
       border: 1px solid #2a2a2a;
-      margin: 20px 0;
+      margin-bottom: 30px;
     }
 
     .video-container h2 {
       color: #ffa31a;
       font-size: 20px;
-      margin: 0 0 15px 0;
+      margin: 10px 0 15px 0;
       text-align: left;
     }
 
@@ -109,13 +109,12 @@
 
     <script>
       const vastAds = [
-        "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name",
-        "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name",
-        "https://s.magsrv.com/v1/vast.php?idzone=5757692",
-        "https://s.magsrv.com/v1/vast.php?idzone=5757698"
+        "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name", // 0
+        "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name", // 1
+        "https://s.magsrv.com/v1/vast.php?idzone=5757692&ex_av=name", // 2
+        "https://s.magsrv.com/v1/vast.php?idzone=5757698&ex_av=name"  // 3
       ];
 
-      let adIndex = 0;
       let clickCount = 0;
 
       // JW Player Setup
@@ -129,25 +128,30 @@
           client: "vast",
           schedule: [
             { offset: "pre", tag: vastAds[0] },
-            { offset: "2:00", tag: vastAds[1] },
-            { offset: "post", tag: vastAds[2] },
-            { offset: "pause", tag: vastAds[3] }
+            { offset: "50%", tag: vastAds[1] },
+            { offset: "post", tag: vastAds[2] }
           ]
         }
       });
 
-      // 3-Click Ad Trigger
+      // 3-Click Ad Trigger (custom sequence)
       player.on("ready", function() {
         const container = player.getContainer();
 
         container.addEventListener("click", function() {
           clickCount++;
-          console.log("Clicked", clickCount);
 
-          if (clickCount % 3 === 0) {
-            const adTag = vastAds[adIndex];
-            adIndex = (adIndex + 1) % vastAds.length;
-            console.log("Playing Ad:", adTag);
+          let adTag;
+          switch(clickCount % 12) {
+            case 3: adTag = vastAds[3]; break; // 3 → 4th ad
+            case 6: adTag = vastAds[0]; break; // 6 → 1st ad
+            case 9: adTag = vastAds[1]; break; // 9 → 2nd ad
+            case 0: adTag = vastAds[2]; break; // 12 → 3rd ad
+            default: adTag = null;
+          }
+
+          if(adTag) {
+            console.log("Playing Click Ad #"+clickCount+":", adTag);
             player.playAd(adTag);
           }
         });
