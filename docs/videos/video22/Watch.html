@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kanda Video</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: #0e0e0e;
+      color: #fff;
+    }
+
+    header {
+      background-color: #1b1b1b;
+      padding: 25px 20px;
+      text-align: center;
+      border-bottom: 3px solid #ffa31a;
+    }
+
+    header h1 {
+      color: #ffa31a;
+      font-size: 42px;
+      margin: 0;
+    }
+
+    main {
+      max-width: 950px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    /* Pornhub-style video section */
+    .video-container {
+      background-color: #1a1a1a;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+      border: 1px solid #2a2a2a;
+      margin-bottom: 30px;
+    }
+
+    .video-container h2 {
+      color: #ffa31a;
+      font-size: 20px;
+      margin: 10px 0 15px 0;
+      text-align: left;
+    }
+
+    #my-video {
+      width: 100%;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    footer {
+      background-color: #1b1b1b;
+      color: #aaa;
+      padding: 30px 20px;
+      text-align: left;
+      font-size: 14px;
+      border-top: 3px solid #ffa31a;
+    }
+
+    footer a {
+      color: #ffa31a;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    .community a {
+      color: #ffa31a;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .community img {
+      width: 24px;
+      height: 24px;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+  </style>
+
+  <!-- JW Player -->
+  <script src="https://cdn.jwplayer.com/libraries/IDzF9Zmk.js"></script>
+</head>
+   <script type='text/javascript' src='//foreststobaccodecember.com/c2/3e/33/c23e337edb03a092a8c8b146fa23b17e.js'></script>
+<body>
+  <header>
+    <h1>Kanda Video</h1>
+    <p>Welcome baby! 💋💦</p>
+  </header>
+
+  <main>
+ 
+
+    <!-- Video Section -->
+    <div class="video-container">
+      <h2>🔥 Hot Nepali Kanda Video 🔥</h2>
+      <div id="my-video"></div>
+    </div>
+
+    <script>
+      const vastAds = [
+        "https://s.magsrv.com/v1/vast.php?idzone=5755632&ex_av=name", // 0
+        "https://s.magsrv.com/v1/vast.php?idzone=5757688&ex_av=name", // 1
+        "https://s.magsrv.com/v1/vast.php?idzone=5757692&ex_av=name", // 2
+        "https://s.magsrv.com/v1/vast.php?idzone=5757698&ex_av=name"  // 3
+      ];
+
+      let clickCount = 0;
+
+      // JW Player Setup
+      const player = jwplayer("my-video").setup({
+        file: "../../videoxx/video1.mp4",
+        image: "../../videoxx/video1-thumbnail.jpg",
+        width: "100%",
+        aspectratio: "16:9",
+        autostart: false,
+        advertising: {
+          client: "vast",
+          schedule: [
+            { offset: "pre", tag: vastAds[0] },
+            { offset: "50%", tag: vastAds[1] },
+            { offset: "post", tag: vastAds[2] }
+          ]
+        }
+      });
+
+      // 3-Click Ad Trigger (custom sequence)
+      player.on("ready", function() {
+        const container = player.getContainer();
+
+        container.addEventListener("click", function() {
+          clickCount++;
+
+          let adTag;
+          switch(clickCount % 12) {
+            case 3: adTag = vastAds[3]; break; // 3 → 4th ad
+            case 6: adTag = vastAds[0]; break; // 6 → 1st ad
+            case 9: adTag = vastAds[1]; break; // 9 → 2nd ad
+            case 0: adTag = vastAds[2]; break; // 12 → 3rd ad
+            default: adTag = null;
+          }
+
+          if(adTag) {
+            console.log("Playing Click Ad #"+clickCount+":", adTag);
+            player.playAd(adTag);
+          }
+        });
+
+        player.on("adComplete", function() {
+          console.log("Ad finished, resuming video");
+          player.play(true);
+        });
+      });
+    </script>
+
+    <!-- Community -->
+    <section class="community" style="margin-top:40px;">
+      <h2>Community & Contact</h2>
+      <p>Stay connected for more exclusive Nepali videos!</p>
+      <p>
+        <a href="https://www.facebook.com/share/18bbW7JyDN/" target="_blank">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook"> Facebook Page
+        </a>
+      </p>
+      <p>
+        <a href="https://t.me/+uQ1AmpYXktczNzJl" target="_blank">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram"> Join Telegram
+        </a>
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Nepali Kanda. All rights reserved.</p>
+    <p><strong>18 U.S.C. 2257 Compliance Statement:</strong> All models appearing on this website are 18 years or older at the time of production. Nepali Kanda does not host or produce any videos on its servers.</p>
+    <p><strong>DMCA Contact:</strong> <a href="mailto:nepalikanda4248@gmail.com">nepalikanda4248@gmail.com</a></p>
+  </footer>
+</body>
+  </html>
