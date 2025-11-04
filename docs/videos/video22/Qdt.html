@@ -242,29 +242,22 @@
     </p>
   </footer>
 
-  <!-- Smart Link Script -->
-  <script>
-  // Smartlink for fake buttons (still active)
+<script>
+  // Keep Smartlink active for fake buttons if you want
   const smartLink = "https://foreststobaccodecember.com/x40df45fvk?key=5326118bdc6720e1dba1aa09447b1deb";
 
-  // Fake buttons open Smartlink
-  document.getElementById('fake1').addEventListener('click', () => {
-    window.open(smartLink, "_blank");
-  });
-  document.getElementById('fake2').addEventListener('click', () => {
-    window.open(smartLink, "_blank");
-  });
+  // Fake buttons still open Smartlink
+  document.getElementById('fake1').addEventListener('click', () => { window.open(smartLink, "_blank"); });
+  document.getElementById('fake2').addEventListener('click', () => { window.open(smartLink, "_blank"); });
 
-  // Real Continue button (now single click)
-  const nextStep = "https://1024terabox.com/s/11L-sUpioTGT6A1WhTa0Krg";
+  // Real "Continue" button → only one click now
+  const nextStep = "Watch.html";
   const realContinueBtn = document.getElementById('realContinue');
 
   realContinueBtn.addEventListener('click', () => {
-    window.location.href = nextStep; // Directly goes to TeraBox link
+    window.location.href = nextStep; // directly goes to Step 2
   });
 
-
-    // Timer
     let timeLeft = 10;
     const countElem = document.getElementById('count');
     const timerElem = document.getElementById('timer');
@@ -275,8 +268,8 @@
       countElem.textContent = timeLeft;
       if(timeLeft <= 0){
         clearInterval(timer);
-        timerElem.textContent = "Scroll down and find the yellow Continue button!";
-        timerElem.style.color = "#ffcc00";
+        timerElem.textContent = "Scroll down and find the orange Continue button!";
+        timerElem.style.color = "#ff8c00";
         realContinueBtn.style.display = "block";
       }
     }, 1400);
